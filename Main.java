@@ -54,7 +54,7 @@ public class Main {
 	public static String[][] variableNames;
 
 	//This must equal the number of terms in the match function
-	public final int numReasonsToPrint = 8;
+	public static final int NUM_REASONS_TO_PRINT = 8;
 	
 	//This is equal to the number of priorities that alumni specify
 	public static final int NUM_PRIORITIES = 3;
@@ -67,7 +67,7 @@ public class Main {
 		int numStudents = readInStudents();
 		int[] numStudentsForEachGroup = countTypesOfStudents();
 		double[][][] distanceMatrix = createDistanceMatrix(zipMap);
-		HashMap<String, Match> matchMap = calculateMatch(NUM_PRIORITIES);
+		HashMap<String, Match> matchMap = calculateMatch(distanceMatrix);
 		createVariables();
 		createLPFile();
 
@@ -335,12 +335,12 @@ public class Main {
 	/*
 	 * the match between each pairwise alumni and prospective student
 	 */
-	public static HashMap<String, Match> calculateMatch(int NUM_PRIORITIES) {
+	public static HashMap<String, Match> calculateMatch(double[][][] distanceMatrix) {
 		//mapping from each pairwise student and alumni to the items they match on
 		HashMap<String, Match> matchMap = new HashMap<String, Match>();
 		matchScores = new double[studentList.size()][alumniList.size()];
 		variableNames = new String[studentList.size()][alumniList.size()];
-		matchReasons = new ValueAndReason[studentList.size()][alumniList.size()][numReasonsToPrint];
+		matchReasons = new ValueAndReason[studentList.size()][alumniList.size()][NUM_REASONS_TO_PRINT];
 		double priorityOneConstant = PRIORITY_ONE_IMPORTANCE;
 		double priorityTwoConstant = PRIORITY_TWO_IMPORTANCE;
 		double priorityThreeConstant = PRIORITY_THREE_IMPORTANCE;
@@ -349,7 +349,7 @@ public class Main {
 			priorityTwoConstant++;
 			priorityThreeConstant++;
 		}
-		double[] terms = new double[numReasonsToPrint];
+		double[] terms = new double[NUM_REASONS_TO_PRINT];
 		for (int i = 0; i < studentList.size(); i++) {
 			Student thisStudent = studentList.get(i);
 			for (int j = 0; j < alumniList.size(); j++) {
@@ -617,7 +617,7 @@ public class Main {
 			File finalOutput = new File("finalOutput.csv");
 			output = new PrintWriter(finalOutput);
 			output.print("Student,Alumni,Match Score");
-			for (int i = 0; i < numReasonsToPrint; i++)
+			for (int i = 0; i < NUM_REASONS_TO_PRINT; i++)
 				output.print(",Reason" + (i + 1));
 			output.println();
 		} catch (FileNotFoundException e) {
@@ -702,7 +702,7 @@ public class Main {
 								output.print(thisStudent.ref + "," + thisAlumni.name + "," + matchScores[i][j]);
 
 								//fill in reasons matrix
-								for (int k = 0; k < numReasonsToPrint; k++) {
+								for (int k = 0; k < NUM_REASONS_TO_PRINT; k++) {
 									output.print("," + matchReasons[i][j][k].reason);
 								}
 								output.println();
