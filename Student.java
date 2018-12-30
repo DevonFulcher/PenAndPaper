@@ -12,10 +12,12 @@ public class Student {
 	public int conversionScore; //ranges from 1 to 6 with students with a score of 1 and 2 being priority
 	public boolean receivesLetter = false; //no student receives a letter upon construction
 	public double averageMatch = 0;
-	public boolean noZip;
+	public boolean noZip; //a student has noZip if their zip code is not recognized to be a US zip. TODO: ask Mrs. Bowman if in US/out of US data is available
+	public boolean noConversion; //some students do not have a specified conversion score
 	public Student(int reff,String st,String zip,ArrayList<String> majInterests, 
 			ArrayList<String> extraCurrInterests, boolean firstGeneration,
-			boolean codyRecipient, boolean moodRecipient, int conversionScore,boolean flag) {
+			boolean codyRecipient, boolean moodRecipient, 
+			int conversionScore, boolean noZip, boolean noConversion) {
 		this.ref = reff;
 		this.state = st;
 		this.zipCode = zip;
@@ -25,13 +27,15 @@ public class Student {
 		this.codyRecipient = codyRecipient;
 		this.moodRecipient = moodRecipient;
 		this.conversionScore = conversionScore;
-		this.noZip = flag;
+		this.noZip = noZip;
+		this.noConversion = noConversion;
 	}
 	
 	public String toString() {
-		return ref + "\n" + "firstGen: " + firstGeneration + "\n" + state + "\n" + "cody: " + codyRecipient 
-				+ "\n" + "mood: " + moodRecipient + "\n" + conversionScore+ "\n" + zipCode + "\n" + majorInterests + "\n" + extraCurricularInterests   + "\n" 
-				+ "receivesLetter: " + receivesLetter + "\n" + "averageMatch: " + averageMatch + "\n" + "noZip: " + noZip + "\n";
+		return "student id: " + ref + "\n" + "firstGen: " + firstGeneration + "\n" + "state: " + state + "\n" + "cody: " + codyRecipient 
+				+ "\n" + "mood: " + moodRecipient + "\n" + "conversion score: " + conversionScore+ "\n" + "zip code: " + zipCode + "\n" 
+				+ "major interests: " + majorInterests + "\n" + "extra curricular interests: " + extraCurricularInterests   + "\n" 
+				+ "receives letter: " + receivesLetter + "\n" + "average match: " + averageMatch + "\n" + "noZip: " + noZip + "\n";
 	}
 	
 	static class StudentAverageMatchComparator implements Comparator<Student> {

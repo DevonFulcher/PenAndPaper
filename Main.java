@@ -31,7 +31,8 @@ public class Main {
 	//The greater this value the more likely a match will occur based on co-curricular interest
 	public static final double COCURRICULAR_INTEREST_IMPORTANCE = 2;
 	//The greater this value the more likely a match will occur based on geographic proximity interest
-	public static final double GEOGRAPHIC_PROXIMITY_IMPORTANCE = 2;
+	//public static final double GEOGRAPHIC_PROXIMITY_IMPORTANCE = 2;
+	//change GEOGRAPHIC_PROXIMITY_IMPORTANCE to be a multiplier
 
 	//For best results priorities should be proportional to each other
 
@@ -53,27 +54,33 @@ public class Main {
 	public static ValueAndReason[][][] matchReasons;	
 	public static String[][] variableNames;
 
-	//This must equal the number of terms in the match function
-	public static final int NUM_REASONS_TO_PRINT = 8;
-	
 	//This is equal to the number of priorities that alumni specify
 	public static final int NUM_PRIORITIES = 3;
-	
+
+	//Office of Admissions criteria. e.g. out of state, first gen, conversion score, scholarships, etc.
+	public static final int NUM_ADMISSIONS_CRITERIA = 5;
+
+	//This must equal the number of terms in the match function
+	public static final int NUM_REASONS_TO_PRINT = NUM_PRIORITIES + NUM_ADMISSIONS_CRITERIA;
+
+	//this designates all possible scholarships that a student could have
+	//TODO: later create a read in final for this information
+	public static final String[] POSSIBLE_SCHOLARSHIPS = {"Mood", "Cody", "Southwestern Award", "Ruter", "McKenzie", "University Award"};
+
 	public static void main(String args[]) throws IOException {
 
 		readInMajors();
-		HashMap<Integer, Pair<Double, Double>> zipMap = readInZipCodes();
-		int totalNumLetters = readInAlumni();
-		int numStudents = readInStudents();
+		HashMap<String, Pair<Double, Double>> zipMap = readInZipCodes();
+		int totalNumLetters = readInAlumni(zipMap);
+		int numStudents = readInStudents(zipMap);
 		int[] numStudentsForEachGroup = countTypesOfStudents();
 		double[][][] distanceMatrix = createDistanceMatrix(zipMap);
 		HashMap<String, Match> matchMap = calculateMatch(distanceMatrix);
 		createVariables();
 		createLPFile();
-
 		System.out.println("run this command: \n"
 				+ "glpsol --lp PenAndPaper.lp --ranges PenAndPaperSensitivity.txt -o PenAndPaperResults.txt \n"
-				+ "in the command line within the Pen_And_Paper folder then press c and enter to continue.");
+				+ "in the command line within the Pen And Paper src folder then press c and enter to continue.");
 
 		//wait for response
 		Scanner scan = new Scanner(System.in);
@@ -91,7 +98,7 @@ public class Main {
 	}	
 
 	public static void readInMajors() throws IOException{
-		File majorsFile=new File("majorsList.txt");//put file name here
+		File majorsFile=new File("./confidential_data/majorsList.txt");//put file name here
 		Scanner reader=new Scanner(majorsFile);
 		while(reader.hasNextLine()) {
 			String major = reader.nextLine();
@@ -101,64 +108,60 @@ public class Main {
 		reader.close();
 	}
 
-	public static HashMap<Integer, Pair<Double, Double>> readInZipCodes() throws IOException{
-		HashMap<Integer, Pair<Double, Double>> zipMap = new HashMap<Integer, Pair<Double, Double>>();
-		File zipFile=new File("US Zip Codes from 2013 Government Data.txt");//put file name here
+	public static HashMap<String, Pair<Double, Double>> readInZipCodes() throws IOException{
+		HashMap<String, Pair<Double, Double>> zipMap = new HashMap<String, Pair<Double, Double>>();
+		//zip code data has been obtained from this source: https://gist.github.com/erichurst/7882666
+		File zipFile=new File("./src/US Zip Codes from 2013 Government Data.txt");//put file name here
 		Scanner reader=new Scanner(zipFile);
 		reader.nextLine(); //skip row with header
 		StringTokenizer tokenizer;
-		int zip; 
+		String zip; 
 		double latitude, longitude;
 		while (reader.hasNextLine()) {
 			tokenizer = new StringTokenizer(reader.nextLine(),",");//separates tokens by comma
-			zip = Integer.parseInt(tokenizer.nextToken());
+			zip = tokenizer.nextToken();
 			latitude = Double.parseDouble(tokenizer.nextToken());
 			longitude = Double.parseDouble(tokenizer.nextToken());
 			zipMap.put(zip, new Pair<Double, Double>(latitude, longitude));
 		}
+		reader.close();
 		return zipMap;
 	}
 
-	public static int readInAlumni() throws IOException{
+	public static int readInAlumni(HashMap<String, Pair<Double, Double>> zipMap) throws IOException{
 		int totalNumLetters = 0;
-		File alumniFile=new File("Alumni Data.txt");//put file name here
+		File alumniFile=new File("./confidential_data/Alumni Data.txt");//put file path here
 		Scanner reader=new Scanner(alumniFile);
 		reader.nextLine(); //skip row with header
 		StringTokenizer tokenizer;
 		while (reader.hasNextLine()) {
-			tokenizer = new StringTokenizer(reader.nextLine(),",");//separates tokens by comma
+			tokenizer = new StringTokenizer(reader.nextLine(),","); //separates tokens by comma
 			Alumni alumni=new Alumni();
-			tokenizer.nextToken(); //get rid of timestamp
+			// TODO: fix this try/catch later
+			try {
+				tokenizer.nextToken(); //get rid of timestamp
+			} catch (NoSuchElementException e) {
+				break;
+			}
 			String firstName = tokenizer.nextToken();			
 			String lastName = tokenizer.nextToken();
-
 			String name = firstName+lastName;
 			while(name.contains(" ")) name=name.replace(" ","");
 			alumni.name = name;
 			alumni.numLetters = Integer.parseInt(tokenizer.nextToken().trim());
 			totalNumLetters += alumni.numLetters;
 
-			//priority 1
-			String p1 = tokenizer.nextToken();
-			alumni.pOne = p1;
-			String p1Info = tokenizer.nextToken();
-			while(p1Info.contains(" "))p1Info=p1Info.replace(" ","");
-			alumni.assignPriority(p1Info);
-
-			//priority 2
-			String p2 = tokenizer.nextToken();
-			alumni.pTwo = p2;
-			String p2Info = tokenizer.nextToken();
-			while(p2Info.contains(" "))p2Info=p2Info.replace(" ","");
-			alumni.assignPriority(p2Info);
-
-			//priority 3
-			String p3 = tokenizer.nextToken();
-			alumni.pThree = p3;
-			String p3Info = tokenizer.nextToken();
-			while(p3Info.contains(" "))p3Info=p3Info.replace(" ","");
-			alumni.assignPriority(p3Info);
-			//END OF READING TOKENS
+			for (int i = 0; i < NUM_PRIORITIES; i++) {
+				String thisPriorityType = tokenizer.nextToken();
+				alumni.priorityTypes.add(i, thisPriorityType);
+				String thisStatedPriority = tokenizer.nextToken();
+				thisStatedPriority = editStatedPriority(thisStatedPriority);
+				alumni.statedPriority.add(i, thisStatedPriority);
+				if (thisPriorityType.equals("Geographic Proximity") && !zipMap.containsKey(thisStatedPriority)) {
+					// if this alumnus' zip code is not in the zipMap then it is not a recognized zip code
+					alumni.noZip = true;
+				}
+			}
 
 			alumniList.add(alumni);//add alumni to list of Alumni objects
 		}
@@ -166,9 +169,17 @@ public class Main {
 		return totalNumLetters;
 	}
 
-	public static int readInStudents() throws IOException{
+	//edit stated priority to conform with data standards
+	public static String editStatedPriority(String statedPriority) {
+		while(statedPriority.contains(" "))statedPriority=statedPriority.replace(" ","");
+		if(statedPriority.contains("(Pre-Engineering)")) statedPriority = statedPriority.replace("(Pre-Engineering)","");
+		if(statedPriority.contains("(Studio)")) statedPriority = statedPriority.replace("(Studio)","");
+		return statedPriority;
+	}
+
+	public static int readInStudents(HashMap<String, Pair<Double, Double>> zipMap) throws IOException{
 		int numStudents = 0;
-		File studentFile=new File("Student Data.txt");//file name
+		File studentFile=new File("./confidential_data/Student Data.txt");//file name
 		Scanner reader=new Scanner(studentFile);
 		reader.nextLine();//Skip the row with headers
 		while(reader.hasNextLine()) {
@@ -178,29 +189,52 @@ public class Main {
 			int ref = Integer.parseInt(tokenizer.nextToken().trim());
 
 			boolean firstGen = false;
-			if (tokenizer.nextToken().equals("1")) firstGen = true;
-
-			String state = tokenizer.nextToken();
+			String state;
+			String nextToken = tokenizer.nextToken();
+			if (nextToken.equals("1")) {
+				firstGen = true;
+				state = tokenizer.nextToken();
+			} else {
+				//state was read in as nextToken not firstGen status
+				state = nextToken;
+			}
 
 			boolean cody = false;
 			boolean mood = false;
-			String scholarship = tokenizer.nextToken();
-			if (scholarship.equals("Mood")) mood = true;
-			if (scholarship.equals("Cody")) cody = true;
-
-			int conversion = Integer.parseInt(tokenizer.nextToken().trim());
-
-			String tryy = tokenizer.nextToken();
-			String zip;
-			boolean noZip = false;
-			zip = tryy.substring(0, 2);
-			try {//Tries to convert the zip token into an integer. If it fails, this student did not have a zipcode and noZip is true
-				@SuppressWarnings("unused")
-				int dummy = Integer.parseInt(zip);
-			}catch(Exception e){
-				noZip = true;
+			int conversion = -1;
+			nextToken = tokenizer.nextToken();
+			//true if nextToken is within POSSIBLE_SCHOLARSHIPS and false otherwise
+			if (Arrays.binarySearch(POSSIBLE_SCHOLARSHIPS, nextToken) >= 0) {
+				if (nextToken.equals("Mood")) {
+					mood = true;
+				} else if (nextToken.equals("Cody")) {
+					cody = true;
+				}
+				nextToken = tokenizer.nextToken();
+			}
+			boolean noConversion = false;
+			String[] possibleConversionScores = {"1","2","3","4","5","6"};
+			//true if nextToken is within possibleConversionsScores and false otherwise
+			if (Arrays.binarySearch(possibleConversionScores, nextToken) >= 0) {
+				conversion = Integer.parseInt(nextToken.trim());
+				nextToken = tokenizer.nextToken();
+			} else {
+				noConversion = true; // this is true if this student does not have a conversion score
+			}
+			if (!noConversion) {
+				assert conversion != -1;
 			}
 
+			String zip = "";
+			boolean noZip = false; //noZip is true if this student doesn't have an identifiable zip code & false otherwise
+			if (nextToken.length() >= 5) {
+				zip = nextToken.substring(0, 5); //we just want the first 5 digits of the zipcode to find distances
+				if (!zipMap.containsKey(zip)) {
+					noZip = true;
+				}
+			} else {
+				noZip = true;
+			}
 
 			ArrayList<String> majorInterests=new ArrayList<String>();//read in Major Interests and extracurriculars
 			ArrayList<String> extraInterests=new ArrayList<String>();
@@ -216,8 +250,8 @@ public class Main {
 				}
 			}
 
-
-			Student student=new Student(ref,state,zip,majorInterests,extraInterests,firstGen,cody,mood,conversion,noZip);
+			Student student = new Student
+					(ref,state,zip,majorInterests,extraInterests,firstGen,cody,mood,conversion,noZip,noConversion);
 			numStudents++;
 			studentList.add(student);
 		}
@@ -263,48 +297,50 @@ public class Main {
 		return numStudentsForEachGroup;
 	}
 
-	public static double[][][] createDistanceMatrix(HashMap<Integer, Pair<Double, Double>> zipMap) {
-		final int numPriorities = 3;
-		double[][][] distanceMatrix = new double[studentList.size()][alumniList.size()][numPriorities];
+	public static double[][][] createDistanceMatrix(HashMap<String, Pair<Double, Double>> zipMap) {
+		double[][][] distanceMatrix = new double[studentList.size()][alumniList.size()][NUM_PRIORITIES];
 		double studentLatitude, studentLongitude;
 		double alumniLatitude, alumniLongitude;
 		double maxDistance = 0;
 		for(int i = 0; i < studentList.size(); i++) {
 			Student thisStudent = studentList.get(i);
-			studentLatitude = zipMap.get(thisStudent.zipCode).element1;
-			studentLongitude = zipMap.get(thisStudent.zipCode).element2;
-			for(int j = 0; j < alumniList.size(); j++) {
-				Alumni thisAlumni = alumniList.get(j);
-				if(thisAlumni.priorities.get(0) == "Geographic Proximity") {
-					alumniLatitude = zipMap.get(thisAlumni.pOne).element1;
-					alumniLongitude = zipMap.get(thisAlumni.pOne).element2;
-					distanceMatrix[i][j][0] = distance(studentLatitude, studentLongitude, alumniLatitude, alumniLongitude);
-					maxDistance = Double.max(maxDistance, distanceMatrix[i][j][0]);
-				} else {
-					distanceMatrix[i][j][0] = -1;
+			if (thisStudent.noZip) { //noZip usually occurs if the student has an out of US zip code
+				for(int j = 0; j < alumniList.size(); j++) {
+					for(int k = 0; k < NUM_PRIORITIES; k++) {
+						//if a student doesn't have a zip then that student doesn't have a distance to any alumni
+						distanceMatrix[i][j][k] = -1;
+					}
 				}
-				if(thisAlumni.priorities.get(1) == "Geographic Proximity") {
-					alumniLatitude = zipMap.get(thisAlumni.pTwo).element1;
-					alumniLongitude = zipMap.get(thisAlumni.pTwo).element2;
-					distanceMatrix[i][j][1] = distance(studentLatitude, studentLongitude, alumniLatitude, alumniLongitude);
-					maxDistance = Double.max(maxDistance, distanceMatrix[i][j][1]);
-				} else {
-					distanceMatrix[i][j][1] = -1;
-				}
-				if(thisAlumni.priorities.get(2) == "Geographic Proximity") {
-					alumniLatitude = zipMap.get(thisAlumni.pThree).element1;
-					alumniLongitude = zipMap.get(thisAlumni.pThree).element2;
-					distanceMatrix[i][j][2] = distance(studentLatitude, studentLongitude, alumniLatitude, alumniLongitude);
-					maxDistance = Double.max(maxDistance, distanceMatrix[i][j][2]);
-				} else {
-					distanceMatrix[i][j][2] = -1;
+			} else {
+				studentLatitude = zipMap.get(thisStudent.zipCode).element1;
+				studentLongitude = zipMap.get(thisStudent.zipCode).element2;
+				for(int j = 0; j < alumniList.size(); j++) {
+					Alumni thisAlumnus = alumniList.get(j);
+					if (thisAlumnus.noZip) {
+						for(int k = 0; k < NUM_PRIORITIES; k++) {
+							//if an alumnus doesn't have a zip then that alumnus doesn't have a distance to any alumni
+							distanceMatrix[i][j][k] = -1;
+						}
+					} else {
+						for(int k = 0; k < NUM_PRIORITIES; k++) {
+							if(thisAlumnus.priorityTypes.get(k).equals("Geographic Proximity")) {
+								alumniLatitude = zipMap.get(thisAlumnus.statedPriority.get(k)).element1;
+								alumniLongitude = zipMap.get(thisAlumnus.statedPriority.get(k)).element2;
+								distanceMatrix[i][j][k] = distance(studentLatitude, studentLongitude, alumniLatitude, alumniLongitude);
+								maxDistance = Double.max(maxDistance, distanceMatrix[i][j][k]);
+							} else {
+								distanceMatrix[i][j][k] = -1;
+							}
+						} 
+					}
 				}
 			}
 		}
 		for(int i = 0; i < studentList.size(); i++) {
 			for(int j = 0; j < alumniList.size(); j++) {
-				for(int k = 0; k < numPriorities; k++) {
-					distanceMatrix[i][j][k] /= maxDistance;
+				for(int k = 0; k < NUM_PRIORITIES; k++) {
+					//scales every distance to be in [0,1] then subtracts from 1 to give lower distances greater value
+					distanceMatrix[i][j][k] = 1 - (distanceMatrix[i][j][k] / maxDistance);
 				}
 			}
 		}
@@ -353,61 +389,55 @@ public class Main {
 		for (int i = 0; i < studentList.size(); i++) {
 			Student thisStudent = studentList.get(i);
 			for (int j = 0; j < alumniList.size(); j++) {
-				Alumni thisAlumni = alumniList.get(j);
+				Alumni thisAlumni = alumniList.get(j);				
 				Match thisMatch = new Match(NUM_PRIORITIES);
+				int k = 0;
 				try {
-					int k = 0;
-					//priority 1
-					Pair<Double, Match> parameterTriple = matchValue(thisStudent, thisAlumni, thisMatch, 1);
-					thisMatch = parameterTriple.element2;
-					double matchValue = parameterTriple.element1;
-					thisMatch.priorityOne = matchValue > 0;
-					terms[0] = priorityOneConstant * matchValue;
-					matchReasons[i][j][k++] = new ValueAndReason(terms[0], (terms[0] > 0)? thisAlumni.pOne: "null");
-
-					//priority 2
-					parameterTriple = matchValue(thisStudent, thisAlumni, thisMatch, 2);
-					thisMatch = parameterTriple.element2;
-					matchValue = parameterTriple.element1;
-					thisMatch.priorityTwo = matchValue > 0;
-					terms[1] = priorityTwoConstant * matchValue;
-					matchReasons[i][j][k++] = new ValueAndReason(terms[1], (terms[1] > 0)? thisAlumni.pTwo: "null");
-
-					//priority 3
-					parameterTriple = matchValue(thisStudent, thisAlumni, thisMatch, 3);
-					thisMatch = parameterTriple.element2;
-					matchValue = parameterTriple.element1;
-					thisMatch.priorityThree = matchValue > 0;
-					terms[2] = priorityThreeConstant * matchValue;
-					matchReasons[i][j][k++] = new ValueAndReason(terms[2], (terms[2] > 0)? thisAlumni.pThree: "null");
-
+					while(k < NUM_PRIORITIES) {
+						double thisDistance = distanceMatrix[i][j][k];
+						Triple<Double, Double, Match> returnTuple = matchValue(thisStudent, thisAlumni, thisMatch, thisDistance, k);
+						double thisMatchValue = returnTuple.element1;
+						double thisTermAddition = returnTuple.element2; //this is added to this term to incentivize various priority types 
+						thisMatch = returnTuple.element3;
+						thisMatch.priorities[k] = thisMatchValue > 0; //TODO: consider distance of 0
+						terms[k] = priorityOneConstant * thisMatchValue + thisTermAddition;
+						matchReasons[i][j][k] = new ValueAndReason(terms[k], (terms[k] > 0)? thisAlumni.priorityTypes.get(k): "null");
+						k++;
+					}
 					//populate match map for later analysis
 					matchMap.put(thisAlumni.name + thisStudent.ref, thisMatch);
 
 					//add constant to increase importance of first generation
-					terms[3] = (thisStudent.firstGeneration)? FIRST_GENERATION_IMPORTANCE: 0;
-					matchReasons[i][j][k++] = new ValueAndReason(terms[3], (terms[3] > 0)? "first generation": "null");
+					terms[k] = (thisStudent.firstGeneration)? FIRST_GENERATION_IMPORTANCE: 0;
+					matchReasons[i][j][k++] = new ValueAndReason(terms[k], (terms[k] > 0)? "first generation": "null");
 
 					//add constant to increase importance of out of state
-					terms[4] = (!thisStudent.state.equals("TX"))? OUT_OF_STATE_IMPORTANCE: 0;
-					matchReasons[i][j][k++] = new ValueAndReason(terms[4], (terms[4] > 0)? "out of state": "null");
+					terms[k] = (!thisStudent.state.equals("TX"))? OUT_OF_STATE_IMPORTANCE: 0;
+					matchReasons[i][j][k++] = new ValueAndReason(terms[k], (terms[k] > 0)? "out of state": "null");
 
 					//add constant to increase importance of Cody scholarship
-					terms[5] = (thisStudent.codyRecipient)? CODY_SCHOLARSHIP_IMPORTANCE: 0;
-					matchReasons[i][j][k++] = new ValueAndReason(terms[5], (terms[5] > 0)? "cody scholarship": "null");
+					terms[k] = (thisStudent.codyRecipient)? CODY_SCHOLARSHIP_IMPORTANCE: 0;
+					matchReasons[i][j][k++] = new ValueAndReason(terms[k], (terms[k] > 0)? "cody scholarship": "null");
 
 					//add constant to increase importance of Mood scholarship
-					terms[6] = (thisStudent.moodRecipient)? MOOD_SCHOLARSHIP_IMPORTANCE: 0;
-					matchReasons[i][j][k++] = new ValueAndReason(terms[6], (terms[6] > 0)? "mood scholarship": "null");
+					terms[k] = (thisStudent.moodRecipient)? MOOD_SCHOLARSHIP_IMPORTANCE: 0;
+					matchReasons[i][j][k++] = new ValueAndReason(terms[k], (terms[k] > 0)? "mood scholarship": "null");
 
-					//add constant to increase important of having a low conversion score
-					terms[7] = 1.0 / thisStudent.conversionScore * LOW_CONVERSION_SCORE_IMPORTANCE;
-					matchReasons[i][j][k++] = new ValueAndReason(terms[7], (terms[7] > 0)? "conversions score of " + thisStudent.conversionScore: "null");
-
+					double adjustedConversion = 0;
+					if (thisStudent.noConversion) {
+						//set to be approximately the average of conversion scores
+						adjustedConversion = 0.5;
+					} else {
+						//changes range of conversion score from [1,6] to [0,5] then scales score to be in [0,1]
+						//then subtracts score from one to increase importance of lower scores 
+						adjustedConversion = (1 - (((double) (thisStudent.conversionScore - 1)) / 5.0));
+					}
+					terms[k] = adjustedConversion * LOW_CONVERSION_SCORE_IMPORTANCE;
+					
+					matchReasons[i][j][k] = new ValueAndReason(terms[k], (terms[k] > 0)? "adjusted conversion score of " + adjustedConversion: "null");
 				} catch (ArrayIndexOutOfBoundsException e) {
-					System.out.println("be sure that the number of terms is equal to numReasonsToPrint");
+					System.out.println("be sure that the number of terms is equal to numReasonsToPrint. " + k + " should equal " + NUM_REASONS_TO_PRINT);
 				}
-
 				Arrays.sort(matchReasons[i][j], new ValueAndReason.ValueAndReasonComparator());
 				//reverse order of sorted array
 				int backIndex = matchReasons[i][j].length - 1;
@@ -426,57 +456,41 @@ public class Main {
 		return matchMap; 
 	}
 
-	public static Pair<Double, Match> matchValue(Student student, Alumni alumni, Match match, int priority) {
-		String thisPriority = "";
-		switch (priority) {
-		case 1:
-			thisPriority = alumni.pOne;
-			break;
-		case 2:
-			thisPriority = alumni.pTwo;
-			break;
-		case 3:
-			thisPriority = alumni.pThree;
-		}
+	public static Triple<Double, Double, Match> matchValue(Student student, Alumni alumni, Match match, 
+			double thisDistance, int priorityIndex) {
+		String thisPriority = alumni.priorityTypes.get(priorityIndex);
 		//for each list below, the index that the value is at corresponds to the number priority it belongs to.
-		//For example, the major corresponding to Academic Area as priority 1 will be in aArea[0]. To get this, we put [priority - 1]
-		//since the int variable priority is 1-3 depending on which alumni priority the method is checking.
 		if (thisPriority.equals("Academic Interest")) {
-			if (student.majorInterests.contains(alumni.priorities.get(priority - 1))) {
+			if (student.majorInterests.contains(alumni.statedPriority.get(priorityIndex))) {
 				match.academicInterestMatch = true;
-				return new Pair<Double, Match>(1 + ACADEMIC_INTEREST_IMPORTANCE, match);
+				return new Triple<Double, Double, Match>(1.0, ACADEMIC_INTEREST_IMPORTANCE, match);
 			} else {
-				return new Pair<Double, Match>(0.0, match);
+				return new Triple<Double, Double, Match>(0.0, 0.0, match);
 			}
 		}
-		if (thisPriority.equals("Co-curricular Interest")) {
-			double matchValue = 0;
+		if (thisPriority.equals("Co-Curricular Activity") || thisPriority.equals("Co-Curricular Interest")) {
 			for(int i=0;i<student.extraCurricularInterests.size();i++) {
 				//checks if student extracurricular contains alumni input for co curricular
 				//"Swimming - Men" will match with alumni input of "Swimming"
 				//"Musicc" will match with alumni input of "Music"
-				if (student.extraCurricularInterests.get(i).contains(alumni.priorities.get(priority - 1))) {
+				if (student.extraCurricularInterests.get(i).contains(alumni.statedPriority.get(priorityIndex))) {
 					match.coCurricularMatch = true;
-					matchValue = 1 + COCURRICULAR_INTEREST_IMPORTANCE;
-					break;
+					return new Triple<Double, Double, Match>(1.0, COCURRICULAR_INTEREST_IMPORTANCE, match);
 				}
 			}
-			return new Pair<Double, Match>(matchValue, match);
+			return new Triple<Double, Double, Match>(0.0, 0.0, match);
 		}
 		if (thisPriority.equals("Geographic Proximity")) {
-			if (student.noZip) {
-				return new Pair<Double, Match>(0.0, match);
+			if (student.noZip || alumni.noZip) { //student does not have a recognized US zip code
+				return new Triple<Double, Double, Match>(0.0, 0.0, match);
 			} else {
-				if (student.zipCode.equals(alumni.priorities.get(priority - 1).substring(0,2))) { //grabs first 2 digits of alumni zip
-					match.geographicMatch = true;
-					return new Pair<Double, Match>(1 + GEOGRAPHIC_PROXIMITY_IMPORTANCE, match);
-				} else {
-					return new Pair<Double, Match>(0.0, match);
-				}
+				//TODO: possibly change 2nd parameter of this triple
+				return new Triple<Double, Double, Match>(thisDistance, 0.0, match);
 			}
 		}
-		System.out.print(thisPriority + " " + priority);//if the code doesnt exit on an if statement, prints out which priority was the issue
-		throw new IllegalArgumentException("no match on priority");
+		//if the code doesnt exit on an if statement, prints out which priority was the issue
+		throw new IllegalArgumentException("no match on priority" + "\npriority: " + thisPriority + 
+				"\npriority index: " + priorityIndex + "\nthis alumnus: " + alumni);
 	}
 
 	public static void createVariables() {
@@ -493,7 +507,7 @@ public class Main {
 	public static void createLPFile() throws FileNotFoundException {
 		//the total number of letters that alumni are willing to write
 		int totalAlumniLetters = 0; 
-		File glpFile = new File("PenAndPaper.lp");
+		File glpFile = new File("./src/PenAndPaper.lp");
 		PrintWriter output = new PrintWriter(glpFile);
 		output.println("Maximize");
 		output.print("Total_Match:");
@@ -614,7 +628,7 @@ public class Main {
 	public static Triple<int[], int[], int[]> readResults(HashMap<String, Match> matchMap) throws FileNotFoundException{
 		PrintWriter output = null;
 		try {
-			File finalOutput = new File("finalOutput.csv");
+			File finalOutput = new File("./results/Final Output.csv");
 			output = new PrintWriter(finalOutput);
 			output.print("Student,Alumni,Match Score");
 			for (int i = 0; i < NUM_REASONS_TO_PRINT; i++)
@@ -626,97 +640,90 @@ public class Main {
 		}
 		int[] numLettersForEachGroup = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 		int[] numLettersForEachMatch = {0, 0, 0};
-		int[] numLettersForEachPriority = {0, 0, 0};
-		try{
-			File results=new File("PenAndPaperResults.txt");
-			Scanner scan=new Scanner(results);
-			String thisString;
-			for (int i = 0; i < studentList.size(); i++) {
-				for (int j = 0; j < alumniList.size(); j++) {
-					while (scan.hasNext()) {
-						thisString = scan.next();
-						Student thisStudent = studentList.get(i);
-						Alumni thisAlumni = alumniList.get(j);
-						if (thisString.equals(thisAlumni.name + thisStudent.ref)) {
-							scan.next(); //skip over asterisk in file
-							if (scan.nextInt() == 1) {
-								thisStudent.receivesLetter = true;
+		int[] numLettersForEachPriority = new int[NUM_PRIORITIES];
+		File results=new File("./src/PenAndPaperResults.txt");
+		Scanner scan=new Scanner(results);
+		String thisString;
+		for (int i = 0; i < studentList.size(); i++) {
+			for (int j = 0; j < alumniList.size(); j++) {
+				while (scan.hasNext()) {
+					thisString = scan.next();
+					Student thisStudent = studentList.get(i);
+					Alumni thisAlumni = alumniList.get(j);
+					if (thisString.equals(thisAlumni.name + thisStudent.ref)) {
+						scan.next(); //skip over asterisk in file
+						if (scan.nextInt() == 1) {
+							thisStudent.receivesLetter = true;
 
-								//increment the count of the letters that are sent to first generation students
-								if (thisStudent.firstGeneration) {
-									numLettersForEachGroup[0]++;
-								}
-								//increment the count of the letters that are sent to cody recipients
-								if (thisStudent.codyRecipient) {
-									numLettersForEachGroup[1]++;
-								}
-								//increment the count of the letters that are sent to cody recipients
-								if (thisStudent.moodRecipient) {
-									numLettersForEachGroup[2]++;
-								}
-								//increment the count of the letters that are sent to out of state students
-								if (!thisStudent.state.equals("TX")) {
-									numLettersForEachGroup[3]++;
-								}
-								switch(thisStudent.conversionScore) {
-								case 1:
-									numLettersForEachGroup[4]++;
-									break;
-								case 2:
-									numLettersForEachGroup[5]++;
-									break;
-								case 3:
-									numLettersForEachGroup[6]++;
-									break;
-								case 4:
-									numLettersForEachGroup[7]++;
-									break;
-								case 5:
-									numLettersForEachGroup[8]++;
-									break;
-								case 6:
-									numLettersForEachGroup[9]++;
-								}
+							//increment the count of the letters that are sent to first generation students
+							if (thisStudent.firstGeneration) {
+								numLettersForEachGroup[0]++;
+							}
+							//increment the count of the letters that are sent to cody recipients
+							if (thisStudent.codyRecipient) {
+								numLettersForEachGroup[1]++;
+							}
+							//increment the count of the letters that are sent to cody recipients
+							if (thisStudent.moodRecipient) {
+								numLettersForEachGroup[2]++;
+							}
+							//increment the count of the letters that are sent to out of state students
+							if (!thisStudent.state.equals("TX")) {
+								numLettersForEachGroup[3]++;
+							}
+							switch(thisStudent.conversionScore) {
+							case 1:
+								numLettersForEachGroup[4]++;
+								break;
+							case 2:
+								numLettersForEachGroup[5]++;
+								break;
+							case 3:
+								numLettersForEachGroup[6]++;
+								break;
+							case 4:
+								numLettersForEachGroup[7]++;
+								break;
+							case 5:
+								numLettersForEachGroup[8]++;
+								break;
+							case 6:
+								numLettersForEachGroup[9]++;
+							}
 
-								Match thisMatch = matchMap.get(thisAlumni.name + thisStudent.ref);
-								if (thisMatch.academicInterestMatch) {
-									numLettersForEachMatch[0]++;
-								}
-								if (thisMatch.coCurricularMatch) {
-									numLettersForEachMatch[1]++;
-								}
+							Match thisMatch = matchMap.get(thisAlumni.name + thisStudent.ref);
+							if (thisMatch.academicInterestMatch) {
+								numLettersForEachMatch[0]++;
+							}
+							if (thisMatch.coCurricularMatch) {
+								numLettersForEachMatch[1]++;
+							}
+
+							/*TODO: fix this
 								if (thisMatch.geographicMatch) {
 									numLettersForEachMatch[2]++;
-								}
+								}*/
 
-								if (thisMatch.priorityOne) {
-									numLettersForEachPriority[0]++;
+							for (int k = 0; k < NUM_PRIORITIES; k++) {
+								if (thisMatch.priorities[k]) {
+									numLettersForEachPriority[k]++;
 								}
-								if (thisMatch.priorityTwo) {
-									numLettersForEachPriority[1]++;
-								}
-								if (thisMatch.priorityThree) {
-									numLettersForEachPriority[2]++;
-								}
-
-								output.print(thisStudent.ref + "," + thisAlumni.name + "," + matchScores[i][j]);
-
-								//fill in reasons matrix
-								for (int k = 0; k < NUM_REASONS_TO_PRINT; k++) {
-									output.print("," + matchReasons[i][j][k].reason);
-								}
-								output.println();
 							}
-							break;
+
+							output.print(thisStudent.ref + "," + thisAlumni.name + "," + matchScores[i][j]);
+
+							//fill in reasons matrix
+							for (int k = 0; k < NUM_REASONS_TO_PRINT; k++) {
+								output.print("," + matchReasons[i][j][k].reason);
+							}
+							output.println();
 						}
+						break;
 					}
 				}
 			}
-			scan.close();
 		}
-		catch(IOException e){
-			System.out.println("Error reading file");
-		}
+		scan.close();
 		output.close();
 		return new Triple<int[], int[], int[]> (numLettersForEachGroup, numLettersForEachMatch, numLettersForEachPriority);
 	}
@@ -726,7 +733,7 @@ public class Main {
 		assert numStudentsForEachGroup.length == numLettersForEachGroup.length;
 		PrintWriter output = null;
 		try {
-			File studentCategoryAnalysis = new File("categoryAnalysis.csv");
+			File studentCategoryAnalysis = new File("./results/Category Analysis.csv");
 			output = new PrintWriter(studentCategoryAnalysis);
 
 			//student category statistics
@@ -781,7 +788,7 @@ public class Main {
 
 		PrintWriter output = null;
 		try {
-			File studentsLackingLetters = new File("studentsLackingLetters.csv");
+			File studentsLackingLetters = new File("./results/Students Lacking Letters.csv");
 			output = new PrintWriter(studentsLackingLetters);
 			output.println("Student,Average Match");
 			for (Student student: studentsLackingLetter)
@@ -797,7 +804,7 @@ public class Main {
 	public static void outputMatchScores() throws FileNotFoundException {
 		PrintWriter output = null;
 		try {
-			File studentsLackingLetters = new File("matchScores.csv");
+			File studentsLackingLetters = new File("./results/Match Scores.csv");
 			output = new PrintWriter(studentsLackingLetters);
 			output.print(",");
 			for (Alumni alumni: alumniList) {

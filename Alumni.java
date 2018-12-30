@@ -2,19 +2,19 @@ import java.util.ArrayList;
 
 public class Alumni {
     public String name;
-    ArrayList<String> priorities = new ArrayList<String>(); //can contain zip, academic area, or co-curricular activities
-    public String pOne;
-    public String pTwo;
-    public String pThree;
+    //the pattern of this Alumnus' state priorities
+    //index 0 contains this Alumni's 1st stated priority, etc.
+    //can contain zip, academic area, or co-curricular activities
+    ArrayList<String> priorityTypes = new ArrayList<String>();
+    //this Alumnus' ith stated priority.
+    //The type of each priority matches the pattern in priorityTypes
+    ArrayList<String> statedPriority = new ArrayList<String>();
     public int numLetters;
-    
-    public void assignPriority(String priorityValue) {
-    	if(priorityValue.contains("(Pre-Engineering)")) priorityValue = priorityValue.replace("(Pre-Engineering)","");
-		if(priorityValue.contains("(Studio)")) priorityValue = priorityValue.replace("(Studio)","");
-		priorities.add(priorityValue);
-	}
+    public boolean noZip = false;
     
     public String toString() {
-    	return name + "\n" + priorities + "\n" + pOne + "\n" + pTwo + "\n" + pThree + "\n" + numLetters + "\n";
+    	return "alumnus name: " + name + "\n" + "priority types: " 
+    			+ priorityTypes + "\n" + "stated priority: " + statedPriority
+    			+ "\n" + "number of letters: " + numLetters + "\n" + "noZip: " + noZip + "\n";
     }
 }
