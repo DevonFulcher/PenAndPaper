@@ -3,7 +3,7 @@ import java.util.*;
 import java.io.*;
 
 
-public class Main {
+public class MainClass {
 	//start options 
 	//Warning! variables do not necessarily linearly scale the output. experimentation is required to create ideal matching
 	//If true then alumni will be matched with 1 less letter than they designate
@@ -83,15 +83,15 @@ public class Main {
 				+ "glpsol --lp PenAndPaper.lp --ranges PenAndPaperSensitivity.txt -o PenAndPaperResults.txt \n"
 				+ "in the command line within the Pen And Paper src folder then press c and enter to continue.");
 
-		//a parameter needs to exist if the program is being run from the command line
+		//a parameter needs to exist if the program is being run from the command line with jar
 		//TODO: ensure this works
-		if (args[0].equals("commandLineParam")) {
-			System.out.println("glpsol --lp PenAndPaper.lp --ranges PenAndPaperSensitivity.txt -o PenAndPaperResults.txt");
-		} else {
+		if (args.length == 0) {
 			//wait for response
 			Scanner scan = new Scanner(System.in);
 			scan.next();
 			scan.close();
+		} else {
+			System.out.println("glpsol --lp PenAndPaper.lp --ranges PenAndPaperSensitivity.txt -o PenAndPaperResults.txt");
 		}
 
 		Triple<int[], int[], int[]> parameterTriple = readResults(matchMap);
@@ -105,7 +105,7 @@ public class Main {
 	}	
 
 	public static void readInMajors() throws IOException{
-		File majorsFile=new File("./confidential_data/majorsList.txt");//put file name here
+		File majorsFile=new File("./confidential_data/Majors List.csv");//put file name here
 		Scanner reader=new Scanner(majorsFile);
 		while(reader.hasNextLine()) {
 			String major = reader.nextLine();
