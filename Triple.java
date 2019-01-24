@@ -1,3 +1,4 @@
+package MainPackage;
 
 public class Triple <T,P,Q>{
 	public T element1;

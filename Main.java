@@ -1,3 +1,4 @@
+package MainPackage;
 import java.util.*;
 import java.io.*;
 
@@ -82,10 +83,16 @@ public class Main {
 				+ "glpsol --lp PenAndPaper.lp --ranges PenAndPaperSensitivity.txt -o PenAndPaperResults.txt \n"
 				+ "in the command line within the Pen And Paper src folder then press c and enter to continue.");
 
-		//wait for response
-		Scanner scan = new Scanner(System.in);
-		scan.next();
-		scan.close();
+		//a parameter needs to exist if the program is being run from the command line
+		//TODO: ensure this works
+		if (args[0].equals("commandLineParam")) {
+			System.out.println("glpsol --lp PenAndPaper.lp --ranges PenAndPaperSensitivity.txt -o PenAndPaperResults.txt");
+		} else {
+			//wait for response
+			Scanner scan = new Scanner(System.in);
+			scan.next();
+			scan.close();
+		}
 
 		Triple<int[], int[], int[]> parameterTriple = readResults(matchMap);
 		int[] numLettersForEachGroup = parameterTriple.element1;
@@ -130,7 +137,7 @@ public class Main {
 
 	public static int readInAlumni(HashMap<String, Pair<Double, Double>> zipMap) throws IOException{
 		int totalNumLetters = 0;
-		File alumniFile=new File("./confidential_data/Alumni Data.txt");//put file path here
+		File alumniFile=new File("./confidential_data/Alumni Data.csv");//put file path here
 		Scanner reader=new Scanner(alumniFile);
 		reader.nextLine(); //skip row with header
 		StringTokenizer tokenizer;
@@ -179,7 +186,7 @@ public class Main {
 
 	public static int readInStudents(HashMap<String, Pair<Double, Double>> zipMap) throws IOException{
 		int numStudents = 0;
-		File studentFile=new File("./confidential_data/Student Data.txt");//file name
+		File studentFile=new File("./confidential_data/Student Data.csv");//file name
 		Scanner reader=new Scanner(studentFile);
 		reader.nextLine();//Skip the row with headers
 		while(reader.hasNextLine()) {

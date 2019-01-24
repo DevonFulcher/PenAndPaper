@@ -1,3 +1,4 @@
+package MainPackage;
 
 public class Match {
 	public boolean coCurricularMatch = false;

@@ -1,3 +1,4 @@
+package MainPackage;
 
 public class Pair <T,P>{
 	public T element1;
