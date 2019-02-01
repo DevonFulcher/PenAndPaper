@@ -55,10 +55,12 @@ public class MainClass {
 	public static final int NUM_REASONS_TO_PRINT = NUM_PRIORITIES + NUM_ADMISSIONS_CRITERIA;
 
 	//this designates all possible scholarships that a student could have
-	//TODO: later create a read in final for this information
+	//TODO: create a read in final for this information
 	public static final String[] POSSIBLE_SCHOLARSHIPS = {"Mood", "Cody", "Southwestern Award", "Ruter", "McKenzie", "University Award"};
 
-	public static void main(String args[]) throws IOException {
+	public static void main(String args[]) throws IOException, InterruptedException {
+		System.out.println("wait about 10 seconds");
+		
 		//read in data
 		ArrayList<String> majorsList = ReadInData.readInMajors();
 		HashMap<String, Pair<Double, Double>> zipMap = ReadInData.readInZipCodes();
@@ -83,21 +85,8 @@ public class MainClass {
 
 		//create and run linear program
 		SolveLinearProgram.createLPFile(matchScores, variableNames, alumniList, studentList);
-		System.out.println("run this command: \n"
-				+ "glpsol --lp PenAndPaper.lp --ranges PenAndPaperSensitivity.txt -o PenAndPaperResults.txt \n"
-				+ "in the command line within the Pen And Paper src folder then press c and enter to continue.");
-		//a parameter needs to exist if the program is being run from the command line with jar
-		//TODO: ensure this works
-		if (args.length == 0) {
-			//wait for response
-			Scanner scan = new Scanner(System.in);
-			scan.next();
-			scan.close();
-		} else {
-			//TODO need code here
-			System.out.println("glpsol --lp PenAndPaper.lp --ranges PenAndPaperSensitivity.txt -o PenAndPaperResults.txt");
-		}
-
+		SolveLinearProgram.runLP(args);
+		
 		//process results
 		Triple<int[], int[], int[]> parameterTriple = ProcessResults.readResults(matchMap, studentList, alumniList, 
 				matchReasons, matchScores, NUM_REASONS_TO_PRINT, NUM_PRIORITIES);

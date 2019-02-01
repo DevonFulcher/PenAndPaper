@@ -1,7 +1,10 @@
 package MainPackage;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 
@@ -117,5 +120,17 @@ public class SolveLinearProgram {
 
 		output.println("\nEnd");
 		output.close();
+	}
+
+	public static void runLP(String[] args) throws InterruptedException, IOException {
+		//TODO: remove sensitivity analysis
+		//sends string to console to start GLP solver
+		final Process process = Runtime.getRuntime().exec("glpsol --lp src/PenAndPaper.lp --ranges PenAndPaperSensitivity.txt -o PenAndPaperResults.txt");
+		BufferedReader input = new BufferedReader(new InputStreamReader(process.getInputStream()));
+		//continue checking if GLP solver has finished
+		while(!input.readLine().equals("Cannot produce sensitivity analysis report for interior-point or MIP solution")) {
+			//sleep .1 seconds
+			Thread.sleep(100);
+		}
 	}
 }
