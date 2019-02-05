@@ -5,6 +5,7 @@ import java.io.*;
 
 public class MainClass {
 	//Experimentation is required to create ideal matching
+	
 	//If true then alumni will be matched with 1 less letter than they designate
 	//otherwise alumni will be matched with the number of letters that they designate
 	public static final boolean PARTIAL_MATCH_FEATURE = false;
@@ -54,20 +55,17 @@ public class MainClass {
 	//This must equal the number of terms in the match function
 	public static final int NUM_REASONS_TO_PRINT = NUM_PRIORITIES + NUM_ADMISSIONS_CRITERIA;
 
-	//this designates all possible scholarships that a student could have
-	//TODO: create a read in final for this information
-	public static final String[] POSSIBLE_SCHOLARSHIPS = {"Mood", "Cody", "Southwestern Award", "Ruter", "McKenzie", "University Award"};
-
 	public static void main(String args[]) throws IOException, InterruptedException {
-		System.out.println("wait about 10 seconds");
+		System.out.println("wait about 30 seconds");
 		
 		//read in data
 		ArrayList<String> majorsList = ReadInData.readInMajors();
+		ArrayList<String> scholarshipsList = ReadInData.readInScholarships();
 		HashMap<String, Pair<Double, Double>> zipMap = ReadInData.readInZipCodes();
 		Pair<Integer, ArrayList<Alumni>> alumniPair = ReadInData.readInAlumni(zipMap, NUM_PRIORITIES);
 		int totalNumLetters = alumniPair.element1;
 		ArrayList<Alumni> alumniList = alumniPair.element2;
-		ArrayList<Student> studentList = ReadInData.readInStudents(zipMap, POSSIBLE_SCHOLARSHIPS, majorsList);
+		ArrayList<Student> studentList = ReadInData.readInStudents(zipMap, scholarshipsList, majorsList);
 
 		//process data
 		int[] numStudentsForEachGroup = ProcessData.countTypesOfStudents(studentList);
@@ -93,7 +91,8 @@ public class MainClass {
 		int[] numLettersForEachGroup = parameterTriple.element1;
 		int[] numLettersForEachMatch = parameterTriple.element2;
 		int[] numLettersForEachPriority = parameterTriple.element3;
-		ProcessResults.categoryAnalysis(numStudentsForEachGroup, numLettersForEachGroup, totalNumLetters, numLettersForEachMatch, studentList.size(), numLettersForEachPriority);
+		ProcessResults.categoryAnalysis(numStudentsForEachGroup, numLettersForEachGroup, totalNumLetters, 
+				numLettersForEachMatch, studentList.size(), numLettersForEachPriority);
 		ProcessResults.createStudentsLackingLetter(studentList);
 		ProcessResults.outputMatchScores(alumniList, studentList, matchScores);
 		System.out.println("done");

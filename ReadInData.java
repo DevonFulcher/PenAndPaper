@@ -22,6 +22,19 @@ public class ReadInData {
 		reader.close();
 		return majorsList;
 	}
+	
+	public static ArrayList<String> readInScholarships() throws IOException{
+		ArrayList<String> scholarshipsList=new ArrayList<String>();
+		File scholarshipFile=new File("./confidential_data/Scholarship List.csv");//put file name here
+		Scanner reader=new Scanner(scholarshipFile);
+		while(reader.hasNextLine()) {
+			String scholarship = reader.nextLine();
+			while(scholarship.contains(" ")) scholarship=scholarship.replace(" ","");//remove whitespace
+			scholarshipsList.add(scholarship);
+		}
+		reader.close();
+		return scholarshipsList;
+	}
 
 	public static HashMap<String, Pair<Double, Double>> readInZipCodes() throws IOException{
 		HashMap<String, Pair<Double, Double>> zipMap = new HashMap<String, Pair<Double, Double>>();
@@ -93,7 +106,7 @@ public class ReadInData {
 		return statedPriority;
 	}
 	
-	public static ArrayList<Student> readInStudents(HashMap<String, Pair<Double, Double>> zipMap, String[] possibleScholarships, ArrayList<String>majorsList) throws IOException{
+	public static ArrayList<Student> readInStudents(HashMap<String, Pair<Double, Double>> zipMap, ArrayList<String> possibleScholarships, ArrayList<String>majorsList) throws IOException{
 		ArrayList<Student> studentList=new ArrayList<Student>();
 		File studentFile=new File("./confidential_data/Student Data.csv");//file name
 		Scanner reader=new Scanner(studentFile);
@@ -119,8 +132,8 @@ public class ReadInData {
 			boolean mood = false;
 			int conversion = -1;
 			nextToken = tokenizer.nextToken();
-			//true if nextToken is within POSSIBLE_SCHOLARSHIPS and false otherwise
-			if (Arrays.binarySearch(possibleScholarships, nextToken) >= 0) {
+			//true if nextToken is within possibleScholarships and false otherwise
+			if (possibleScholarships.contains(nextToken)) {
 				if (nextToken.equals("Mood")) {
 					mood = true;
 				} else if (nextToken.equals("Cody")) {

@@ -85,7 +85,7 @@ public class ProcessResults {
 								numLettersForEachMatch[1]++;
 							}
 
-							/*TODO: fix this
+							/*TODO: add distance between alumni and student
 								if (thisMatch.geographicMatch) {
 									numLettersForEachMatch[2]++;
 								}*/

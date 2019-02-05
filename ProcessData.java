@@ -114,7 +114,7 @@ public class ProcessData {
 	private static double haversin(double val) {
 		return Math.pow(Math.sin(val / 2), 2);
 	}
-	
+
 	/*
 	 * the match between each pairwise alumni and prospective student
 	 */
@@ -144,7 +144,16 @@ public class ProcessData {
 						thisMatch = returnTuple.element3;
 						thisMatch.priorities[k] = thisMatchValue > 0; //TODO: consider distance of 0
 						terms[k] = priorityOneConstant * thisMatchValue + thisTermAddition;
-						matchReasons[i][j][k] = new ValueAndReason(terms[k], (terms[k] > 0)? thisAlumni.priorityTypes.get(k): "null");
+						//TODO: add distance as reason
+						if(terms[k] > 0) {
+							if(thisAlumni.priorityTypes.get(k).equals("Geographic Proximity")) {
+								matchReasons[i][j][k] = new ValueAndReason(terms[k], "distance between them is " + thisDistance);
+							} else {
+								matchReasons[i][j][k] = new ValueAndReason(terms[k], thisAlumni.priorityTypes.get(k));
+							}
+						} else {
+							matchReasons[i][j][k] = new ValueAndReason(terms[k], "null");
+						}
 						k++;
 					}
 					//populate match map for later analysis
@@ -176,8 +185,9 @@ public class ProcessData {
 						adjustedConversion = (1 - (((double) (thisStudent.conversionScore - 1)) / 5.0));
 					}
 					terms[k] = adjustedConversion * lowConversionScoreImportance;
-					
-					matchReasons[i][j][k] = new ValueAndReason(terms[k], (terms[k] > 0)? "adjusted conversion score of " + adjustedConversion: "null");
+					System.out.println(thisStudent.conversionScore);
+
+					matchReasons[i][j][k] = new ValueAndReason(terms[k], (terms[k] > 0)? "conversion score of " + thisStudent.conversionScore: "null");
 				} catch (ArrayIndexOutOfBoundsException e) {
 					System.out.println("be sure that the number of terms is equal to numReasonsToPrint. " + k + " should equal " + numReasonsToPrint);
 				}
@@ -198,7 +208,7 @@ public class ProcessData {
 		}
 		return new Triple<double[][], HashMap<String, Match>, ValueAndReason[][][]> (matchScores, matchMap, matchReasons); 
 	}
-	
+
 	private static Triple<Double, Double, Match> matchValue(Student student, Alumni alumni, Match match, 
 			double thisDistance, int priorityIndex, double academicInterestImportance, double coCurricularInterestImportance) {
 		String thisPriority = alumni.priorityTypes.get(priorityIndex);
@@ -235,7 +245,7 @@ public class ProcessData {
 		throw new IllegalArgumentException("no match on priority" + "\npriority: " + thisPriority + 
 				"\npriority index: " + priorityIndex + "\nthis alumnus: " + alumni);
 	}
-	
+
 	public static String[][] createVariables(ArrayList<Alumni> alumniList, ArrayList<Student> studentList) {
 		String[][] variableNames = new String[studentList.size()][alumniList.size()];
 		for (int i = 0; i < studentList.size(); i++) {
