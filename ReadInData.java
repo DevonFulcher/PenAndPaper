@@ -29,7 +29,6 @@ public class ReadInData {
 		Scanner reader=new Scanner(scholarshipFile);
 		while(reader.hasNextLine()) {
 			String scholarship = reader.nextLine();
-			while(scholarship.contains(" ")) scholarship=scholarship.replace(" ","");//remove whitespace
 			scholarshipsList.add(scholarship);
 		}
 		reader.close();
@@ -106,7 +105,8 @@ public class ReadInData {
 		return statedPriority;
 	}
 	
-	public static ArrayList<Student> readInStudents(HashMap<String, Pair<Double, Double>> zipMap, ArrayList<String> possibleScholarships, ArrayList<String>majorsList) throws IOException{
+	public static ArrayList<Student> readInStudents(HashMap<String, Pair<Double, Double>> zipMap, 
+			ArrayList<String> possibleScholarships, ArrayList<String>majorsList) throws IOException{
 		ArrayList<Student> studentList=new ArrayList<Student>();
 		File studentFile=new File("./confidential_data/Student Data.csv");//file name
 		Scanner reader=new Scanner(studentFile);
@@ -114,23 +114,27 @@ public class ReadInData {
 		while(reader.hasNextLine()) {
 			String currentLine=reader.nextLine();
 			StringTokenizer tokenizer=new StringTokenizer(currentLine,",");//separates tokens by comma
-
+			
+			//read in student id
 			int ref = Integer.parseInt(tokenizer.nextToken().trim());
 
+			//read in first gen status and state
 			boolean firstGen = false;
 			String state;
 			String nextToken = tokenizer.nextToken();
 			if (nextToken.equals("1")) {
 				firstGen = true;
 				state = tokenizer.nextToken();
+			} else if (nextToken.equals("0")) { 
+				state = tokenizer.nextToken();
 			} else {
 				//state was read in as nextToken not firstGen status
 				state = nextToken;
 			}
 
+			//read in scholarship
 			boolean cody = false;
 			boolean mood = false;
-			int conversion = -1;
 			nextToken = tokenizer.nextToken();
 			//true if nextToken is within possibleScholarships and false otherwise
 			if (possibleScholarships.contains(nextToken)) {
@@ -141,7 +145,10 @@ public class ReadInData {
 				}
 				nextToken = tokenizer.nextToken();
 			}
+			
+			//read in conversion score
 			boolean noConversion = false;
+			int conversion = -1;
 			String[] possibleConversionScores = {"1","2","3","4","5","6"};
 			//true if nextToken is within possibleConversionsScores and false otherwise
 			if (Arrays.binarySearch(possibleConversionScores, nextToken) >= 0) {
@@ -150,10 +157,8 @@ public class ReadInData {
 			} else {
 				noConversion = true; // this is true if this student does not have a conversion score
 			}
-			if (!noConversion) {
-				assert conversion != -1;
-			}
 
+			//read in zip code
 			String zip = "";
 			boolean noZip = false; //noZip is true if this student doesn't have an identifiable zip code & false otherwise
 			if (nextToken.length() >= 5) {
@@ -164,8 +169,9 @@ public class ReadInData {
 			} else {
 				noZip = true;
 			}
-
-			ArrayList<String> majorInterests=new ArrayList<String>();//read in Major Interests and extracurriculars
+			
+			//read in major interests and extracurriculars
+			ArrayList<String> majorInterests=new ArrayList<String>();
 			ArrayList<String> extraInterests=new ArrayList<String>();
 			while(tokenizer.hasMoreTokens()){
 				String token = tokenizer.nextToken();
@@ -178,7 +184,11 @@ public class ReadInData {
 					extraInterests.add(token);
 				}
 			}
-
+			
+			//TODO: JUnit test to ensure student is created correctly
+			if (noConversion) {
+				assert conversion == -1;
+			}
 			Student student = new Student
 					(ref,state,zip,majorInterests,extraInterests,firstGen,cody,mood,conversion,noZip,noConversion);
 			studentList.add(student);

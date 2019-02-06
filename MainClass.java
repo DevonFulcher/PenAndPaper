@@ -4,48 +4,6 @@ import java.io.*;
 
 
 public class MainClass {
-	//Experimentation is required to create ideal matching
-	
-	//If true then alumni will be matched with 1 less letter than they designate
-	//otherwise alumni will be matched with the number of letters that they designate
-	public static final boolean PARTIAL_MATCH_FEATURE = false;
-	//The greater this value the more likely a first generation 
-	//student will get a letter.
-	public static final double FIRST_GENERATION_IMPORTANCE = 10;
-	//The greater this value the more likely an out of state
-	//student will get a letter.
-	public static final double OUT_OF_STATE_IMPORTANCE = 10;
-	//The greater this value the more likely a Cody scholarship
-	//recipient will receive a letter. Independent of the 
-	//Mood scholarship.
-	public static final double CODY_SCHOLARSHIP_IMPORTANCE = 10;
-	//The greater this value the more likely Mood scholarship
-	//recipient will receive a letter. Independent of the
-	//Mood scholarship.
-	public static final double MOOD_SCHOLARSHIP_IMPORTANCE = 2;
-	//The greater this value the more likely a student with a low
-	//conversion score will receive a letter.
-	public static final double LOW_CONVERSION_SCORE_IMPORTANCE = 10;
-
-	//The greater this value the more likely a match will occur based on academic interest
-	public static final double ACADEMIC_INTEREST_IMPORTANCE = 2;
-	//The greater this value the more likely a match will occur based on co-curricular interest
-	public static final double COCURRICULAR_INTEREST_IMPORTANCE = 2;
-	//The greater this value the more likely a match will occur based on geographic proximity interest
-	//public static final double GEOGRAPHIC_PROXIMITY_IMPORTANCE = 2;
-	//change GEOGRAPHIC_PROXIMITY_IMPORTANCE to be a multiplier
-
-	//For best results priorities should be proportional to each other
-
-	//The greater this values the more likely a match will occur based on an alumni's priority one.
-	//Should be greater than the other 2 priorities
-	public static final double PRIORITY_ONE_IMPORTANCE = 9;
-	//The greater this values the more likely a match will occur based on an alumni's priority two
-	//Should be greater than priority 3.
-	public static final double PRIORITY_TWO_IMPORTANCE = 3;
-	//The greater this values the more likely a match will occur based on an alumni's priority three
-	public static final double PRIORITY_THREE_IMPORTANCE = 1;
-
 	//This is equal to the number of priorities that alumni specify
 	public static final int NUM_PRIORITIES = 3;
 
@@ -56,7 +14,54 @@ public class MainClass {
 	public static final int NUM_REASONS_TO_PRINT = NUM_PRIORITIES + NUM_ADMISSIONS_CRITERIA;
 
 	public static void main(String args[]) throws IOException, InterruptedException {
-		System.out.println("wait about 30 seconds");
+		Scanner scan = new Scanner(System.in);
+		System.out.println("email DevonFulcher3@gmail.com if you experience any problems.\n");
+		
+		//read in student attribute importance from user
+		System.out.println("You will be prompted to input the relative importance \n"
+				+ "of each of the student attributes. These are first-generation, out-of-state, \n"
+				+ "Cody sholarship, Mood scholarship, and low conversion score. \n"
+				+ "Greater numbers mean that attribute is more important to you and lesser numbers \n"
+				+ "mean that attribute is less important to you. \n");
+		System.out.print("first-generation: ");
+		double firstGenerationImportance = Double.parseDouble(scan.next());
+		System.out.print("out-of-state: ");
+		double outOfStateImportance = Double.parseDouble(scan.next());
+		System.out.print("Cody sholarship: ");
+		double codyScholarshipImportance = Double.parseDouble(scan.next());
+		System.out.print("Mood scholarship: ");
+		double moodScholarshipImportance = Double.parseDouble(scan.next());
+		System.out.print("low conversion score: ");
+		double lowConversionScoreImportance = Double.parseDouble(scan.next());
+		
+		//read in match categories importance from user
+		System.out.println("\nNow, you will be prompted to input the relative importance \n"
+				+ "of categories that a student and alumni can be matched on. These are \n"
+				+ "academic interests and co-curricular interests. Geographic proximity importance \n"
+				+ "does not apply right now. \n");
+		System.out.print("academic interests: ");
+		double academicInterestImportance = Double.parseDouble(scan.next());
+		System.out.print("co-curricular activities: ");
+		double coCurricularActivityImportance = Double.parseDouble(scan.next());
+		System.out.print("geographic proximity: N/A");
+		
+		//read in priority importance from user
+		System.out.println("\n\nFinally, of the 3 categories that an alumni can choose, they can designate \n"
+				+ "each as their first, second, and third priority. You will be prompted to input the \n"
+				+ "relative importance of each of these priorities. For best results, first priority \n"
+				+ "importance should be greater than second priority importance and second priority \n"
+				+ "importance should be greater than third priority importance. \n");
+		System.out.print("first priority importance: ");
+		double firstPriorityImportance = Double.parseDouble(scan.next());
+		System.out.print("second priority importance: ");
+		double secondPriorityImportance = Double.parseDouble(scan.next());
+		System.out.print("third priority importance: ");
+		double thirdPriorityImportance = Double.parseDouble(scan.next());
+		
+		scan.close();
+		System.out.println("\nPlease wait about 30 seconds. If the results are not satisfactory, try running \n"
+				+ "the program again but with different values for the importance of different variables.");
+		
 		
 		//read in data
 		ArrayList<String> majorsList = ReadInData.readInMajors();
@@ -69,13 +74,13 @@ public class MainClass {
 
 		//process data
 		int[] numStudentsForEachGroup = ProcessData.countTypesOfStudents(studentList);
-		double[][][] distanceMatrix = ProcessData.createDistanceMatrix(zipMap, studentList, alumniList, NUM_PRIORITIES);
+		DistanceWithNormalization[][][] distanceMatrix = ProcessData.createDistanceMatrix(zipMap, studentList, alumniList, NUM_PRIORITIES);
 		Triple<double[][], HashMap<String, Match>, ValueAndReason[][][]> matchTriple = ProcessData.calculateMatch(
 				distanceMatrix, studentList, alumniList,
-				PRIORITY_ONE_IMPORTANCE, PRIORITY_TWO_IMPORTANCE, PRIORITY_THREE_IMPORTANCE,
+				firstPriorityImportance, secondPriorityImportance, thirdPriorityImportance,
 				NUM_REASONS_TO_PRINT, NUM_PRIORITIES, 
-				FIRST_GENERATION_IMPORTANCE, OUT_OF_STATE_IMPORTANCE, CODY_SCHOLARSHIP_IMPORTANCE, 
-				MOOD_SCHOLARSHIP_IMPORTANCE, LOW_CONVERSION_SCORE_IMPORTANCE, ACADEMIC_INTEREST_IMPORTANCE, COCURRICULAR_INTEREST_IMPORTANCE);
+				firstGenerationImportance, outOfStateImportance, codyScholarshipImportance, 
+				moodScholarshipImportance, lowConversionScoreImportance, academicInterestImportance, coCurricularActivityImportance);
 		double[][] matchScores = matchTriple.element1;
 		HashMap<String, Match> matchMap = matchTriple.element2;
 		ValueAndReason[][][] matchReasons = matchTriple.element3;
@@ -95,6 +100,6 @@ public class MainClass {
 				numLettersForEachMatch, studentList.size(), numLettersForEachPriority);
 		ProcessResults.createStudentsLackingLetter(studentList);
 		ProcessResults.outputMatchScores(alumniList, studentList, matchScores);
-		System.out.println("done");
+		System.out.println("\nDone. Results are now in the results folder.");
 	}	
 }

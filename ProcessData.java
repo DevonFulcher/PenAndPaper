@@ -43,9 +43,9 @@ public class ProcessData {
 		return numStudentsForEachGroup;
 	}
 
-	public static double[][][] createDistanceMatrix(
+	public static DistanceWithNormalization[][][] createDistanceMatrix(
 			HashMap<String, Pair<Double, Double>> zipMap, ArrayList<Student> studentList, ArrayList<Alumni> alumniList, int numPriorities) {
-		double[][][] distanceMatrix = new double[studentList.size()][alumniList.size()][numPriorities];
+		DistanceWithNormalization[][][] distanceMatrix = new DistanceWithNormalization[studentList.size()][alumniList.size()][numPriorities];
 		double studentLatitude, studentLongitude;
 		double alumniLatitude, alumniLongitude;
 		double maxDistance = 0;
@@ -55,7 +55,7 @@ public class ProcessData {
 				for(int j = 0; j < alumniList.size(); j++) {
 					for(int k = 0; k < numPriorities; k++) {
 						//if a student doesn't have a zip then that student doesn't have a distance to any alumni
-						distanceMatrix[i][j][k] = -1;
+						distanceMatrix[i][j][k] = new DistanceWithNormalization(-1,-1);
 					}
 				}
 			} else {
@@ -66,17 +66,17 @@ public class ProcessData {
 					if (thisAlumnus.noZip) {
 						for(int k = 0; k < numPriorities; k++) {
 							//if an alumnus doesn't have a zip then that alumnus doesn't have a distance to any alumni
-							distanceMatrix[i][j][k] = -1;
+							distanceMatrix[i][j][k] = new DistanceWithNormalization(-1,-1);
 						}
 					} else {
 						for(int k = 0; k < numPriorities; k++) {
 							if(thisAlumnus.priorityTypes.get(k).equals("Geographic Proximity")) {
 								alumniLatitude = zipMap.get(thisAlumnus.statedPriority.get(k)).element1;
 								alumniLongitude = zipMap.get(thisAlumnus.statedPriority.get(k)).element2;
-								distanceMatrix[i][j][k] = distance(studentLatitude, studentLongitude, alumniLatitude, alumniLongitude);
-								maxDistance = Double.max(maxDistance, distanceMatrix[i][j][k]);
+								distanceMatrix[i][j][k] = new DistanceWithNormalization(distance(studentLatitude, studentLongitude, alumniLatitude, alumniLongitude),-1);
+								maxDistance = Double.max(maxDistance, distanceMatrix[i][j][k].distance);
 							} else {
-								distanceMatrix[i][j][k] = -1;
+								distanceMatrix[i][j][k] = new DistanceWithNormalization(-1,-1);
 							}
 						} 
 					}
@@ -87,7 +87,7 @@ public class ProcessData {
 			for(int j = 0; j < alumniList.size(); j++) {
 				for(int k = 0; k < numPriorities; k++) {
 					//scales every distance to be in [0,1] then subtracts from 1 to give lower distances greater value
-					distanceMatrix[i][j][k] = 1 - (distanceMatrix[i][j][k] / maxDistance);
+					distanceMatrix[i][j][k].normalizedDistance = 1 - (distanceMatrix[i][j][k].distance / maxDistance);
 				}
 			}
 		}
@@ -95,8 +95,7 @@ public class ProcessData {
 	}
 
 	//haversine formula from https://github.com/jasonwinn/haversine
-	private static double distance(double startLat, double startLong,
-			double endLat, double endLong) {
+	private static double distance(double startLat, double startLong, double endLat, double endLong) {
 
 		double dLat  = Math.toRadians((endLat - startLat));
 		double dLong = Math.toRadians((endLong - startLong));
@@ -107,7 +106,7 @@ public class ProcessData {
 		double a = haversin(dLat) + Math.cos(startLat) * Math.cos(endLat) * haversin(dLong);
 		double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
-		final int EARTH_RADIUS = 6371; // Approx Earth radius in KM
+		final int EARTH_RADIUS = 3959; // Approx Earth radius in mi
 		return EARTH_RADIUS * c; // <-- d
 	}
 
@@ -119,7 +118,7 @@ public class ProcessData {
 	 * the match between each pairwise alumni and prospective student
 	 */
 	public static Triple<double[][], HashMap<String, Match>, ValueAndReason[][][]> calculateMatch(
-			double[][][] distanceMatrix, ArrayList<Student> studentList, ArrayList<Alumni> alumniList,
+			DistanceWithNormalization[][][] distanceMatrix, ArrayList<Student> studentList, ArrayList<Alumni> alumniList,
 			double priorityOneConstant, double priorityTwoConstant, double priorityThreeConstant,
 			int numReasonsToPrint, int numPriorities, 
 			double firstGenerationImportance, double outOfStateImportance, double codyScholarshipImportance, 
@@ -137,8 +136,7 @@ public class ProcessData {
 				int k = 0;
 				try {
 					while(k < numPriorities) {
-						double thisDistance = distanceMatrix[i][j][k];
-						Triple<Double, Double, Match> returnTuple = matchValue(thisStudent, thisAlumni, thisMatch, thisDistance, k, academicInterestImportance, coCurricularInterestImportance);
+						Triple<Double, Double, Match> returnTuple = matchValue(thisStudent, thisAlumni, thisMatch, distanceMatrix[i][j][k].normalizedDistance, k, academicInterestImportance, coCurricularInterestImportance);
 						double thisMatchValue = returnTuple.element1;
 						double thisTermAddition = returnTuple.element2; //this is added to this term to incentivize various priority types 
 						thisMatch = returnTuple.element3;
@@ -147,7 +145,7 @@ public class ProcessData {
 						//TODO: add distance as reason
 						if(terms[k] > 0) {
 							if(thisAlumni.priorityTypes.get(k).equals("Geographic Proximity")) {
-								matchReasons[i][j][k] = new ValueAndReason(terms[k], "distance between them is " + thisDistance);
+								matchReasons[i][j][k] = new ValueAndReason(terms[k], "distance between them is " + ((int) Math.round(distanceMatrix[i][j][k].distance)) + " miles");
 							} else {
 								matchReasons[i][j][k] = new ValueAndReason(terms[k], thisAlumni.priorityTypes.get(k));
 							}
@@ -185,7 +183,6 @@ public class ProcessData {
 						adjustedConversion = (1 - (((double) (thisStudent.conversionScore - 1)) / 5.0));
 					}
 					terms[k] = adjustedConversion * lowConversionScoreImportance;
-					System.out.println(thisStudent.conversionScore);
 
 					matchReasons[i][j][k] = new ValueAndReason(terms[k], (terms[k] > 0)? "conversion score of " + thisStudent.conversionScore: "null");
 				} catch (ArrayIndexOutOfBoundsException e) {
