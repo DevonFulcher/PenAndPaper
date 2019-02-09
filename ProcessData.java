@@ -142,15 +142,23 @@ public class ProcessData {
 						thisMatch = returnTuple.element3;
 						thisMatch.priorities[k] = thisMatchValue > 0; //TODO: consider distance of 0
 						terms[k] = priorityOneConstant * thisMatchValue + thisTermAddition;
-						//TODO: add distance as reason
 						if(terms[k] > 0) {
-							if(thisAlumni.priorityTypes.get(k).equals("Geographic Proximity")) {
-								matchReasons[i][j][k] = new ValueAndReason(terms[k], "distance between them is " + ((int) Math.round(distanceMatrix[i][j][k].distance)) + " miles");
+							String priorityType = thisAlumni.priorityTypes.get(k);
+							String statedPriority = thisAlumni.statedPriority.get(k);
+							if(priorityType.equals("Geographic Proximity")) {
+								matchReasons[i][j][k] = new ValueAndReason(terms[k], "distance between them is " +
+										((int) Math.round(distanceMatrix[i][j][k].distance)) + " miles with student zip code " +
+										thisStudent.zipCode + " and alumni zip code " + statedPriority);
+							} else if (priorityType.equals("Academic Interest")){
+								matchReasons[i][j][k] = new ValueAndReason(terms[k], "alumni academic interest is " + 
+										statedPriority + " and student academic interests are " + thisStudent.majorInterests);
 							} else {
-								matchReasons[i][j][k] = new ValueAndReason(terms[k], thisAlumni.priorityTypes.get(k));
+								assert priorityType.equals("Co-Curricular Activity");
+								matchReasons[i][j][k] = new ValueAndReason(terms[k], "alumni co-curricular activity is " +
+										statedPriority + " and student co-curricular activity are " + thisStudent.extraCurricularInterests);
 							}
 						} else {
-							matchReasons[i][j][k] = new ValueAndReason(terms[k], "null");
+							matchReasons[i][j][k] = new ValueAndReason(terms[k], "");
 						}
 						k++;
 					}
@@ -159,19 +167,19 @@ public class ProcessData {
 
 					//add constant to increase importance of first generation
 					terms[k] = (thisStudent.firstGeneration)? firstGenerationImportance: 0;
-					matchReasons[i][j][k++] = new ValueAndReason(terms[k], (terms[k] > 0)? "first generation": "null");
+					matchReasons[i][j][k++] = new ValueAndReason(terms[k], (terms[k] > 0)? "first generation": "");
 
 					//add constant to increase importance of out of state
 					terms[k] = (!thisStudent.state.equals("TX"))? outOfStateImportance: 0;
-					matchReasons[i][j][k++] = new ValueAndReason(terms[k], (terms[k] > 0)? "out of state": "null");
+					matchReasons[i][j][k++] = new ValueAndReason(terms[k], (terms[k] > 0)? "out of state": "");
 
 					//add constant to increase importance of Cody scholarship
 					terms[k] = (thisStudent.codyRecipient)? codyScholarshipImportance: 0;
-					matchReasons[i][j][k++] = new ValueAndReason(terms[k], (terms[k] > 0)? "cody scholarship": "null");
+					matchReasons[i][j][k++] = new ValueAndReason(terms[k], (terms[k] > 0)? "cody scholarship": "");
 
 					//add constant to increase importance of Mood scholarship
 					terms[k] = (thisStudent.moodRecipient)? moodScholarshipImportance: 0;
-					matchReasons[i][j][k++] = new ValueAndReason(terms[k], (terms[k] > 0)? "mood scholarship": "null");
+					matchReasons[i][j][k++] = new ValueAndReason(terms[k], (terms[k] > 0)? "mood scholarship": "");
 
 					double adjustedConversion = 0;
 					if (thisStudent.noConversion) {

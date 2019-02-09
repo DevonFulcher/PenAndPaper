@@ -171,8 +171,8 @@ public class ReadInData {
 			}
 			
 			//read in major interests and extracurriculars
-			ArrayList<String> majorInterests=new ArrayList<String>();
-			ArrayList<String> extraInterests=new ArrayList<String>();
+			ArrayListOverrideToString<String> majorInterests=new ArrayListOverrideToString<String>();
+			ArrayListOverrideToString<String> extraInterests=new ArrayListOverrideToString<String>();
 			while(tokenizer.hasMoreTokens()){
 				String token = tokenizer.nextToken();
 				while(token.contains("\"")) token=token.replace("\"","");//remove excess spaces and quotation marks

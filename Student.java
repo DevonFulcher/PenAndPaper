@@ -5,8 +5,8 @@ public class Student {
 	public int ref;
 	public String state; //string "TX" if state is Texas
 	public String zipCode;
-	public ArrayList<String> majorInterests;
-	public ArrayList<String> extraCurricularInterests;
+	public ArrayListOverrideToString<String> majorInterests;
+	public ArrayListOverrideToString<String> extraCurricularInterests;
 	public boolean firstGeneration;
 	public boolean codyRecipient; //true if this student has been offered the Cody scholarship
 	public boolean moodRecipient; //true if this student has been offered the Mood scholarship
@@ -15,8 +15,8 @@ public class Student {
 	public double averageMatch = 0;
 	public boolean noZip; //a student has noZip if their zip code is not recognized to be a US zip. TODO: ask Mrs. Bowman if in US/out of US data is available
 	public boolean noConversion; //some students do not have a specified conversion score
-	public Student(int reff,String st,String zip,ArrayList<String> majInterests, 
-			ArrayList<String> extraCurrInterests, boolean firstGeneration,
+	public Student(int reff,String st,String zip,ArrayListOverrideToString<String> majInterests, 
+			ArrayListOverrideToString<String> extraCurrInterests, boolean firstGeneration,
 			boolean codyRecipient, boolean moodRecipient, 
 			int conversionScore, boolean noZip, boolean noConversion) {
 		this.ref = reff;
