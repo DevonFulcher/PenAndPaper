@@ -9,7 +9,7 @@ public class ArrayListOverrideToString<T> extends ArrayList<T> {
 	public String toString() {
 		String printString = "[" + this.get(0);
 		for(int i = 1; i < this.size(); i++) {
-			printString = " " + printString + this.get(i);
+			printString = printString + " " + this.get(i);
 		}
 		return printString + "]";
 	}

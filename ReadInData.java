@@ -108,7 +108,7 @@ public class ReadInData {
 	public static ArrayList<Student> readInStudents(HashMap<String, Pair<Double, Double>> zipMap, 
 			ArrayList<String> possibleScholarships, ArrayList<String>majorsList) throws IOException{
 		ArrayList<Student> studentList=new ArrayList<Student>();
-		File studentFile=new File("./confidential_data/Student Data.csv");//file name
+		File studentFile=new File("./confidential_data/updated Student Data.csv");//file name
 		Scanner reader=new Scanner(studentFile);
 		reader.nextLine();//Skip the row with headers
 		while(reader.hasNextLine()) {
@@ -162,7 +162,7 @@ public class ReadInData {
 			String zip = "";
 			boolean noZip = false; //noZip is true if this student doesn't have an identifiable zip code & false otherwise
 			if (nextToken.length() >= 5) {
-				zip = nextToken.substring(0, 5); //we just want the first 5 digits of the zipcode to find distances
+				zip = nextToken.substring(0, 5); //we just want the first 5 digits of the zip code to find distances
 				if (!zipMap.containsKey(zip)) {
 					noZip = true;
 				}

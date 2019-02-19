@@ -3,10 +3,12 @@ import java.util.Comparator;
 
 public class ValueAndReason {
 	double value;
-	String reason;
-	public ValueAndReason(double value, String reason) {
+	//reasons contain first the match category, then the corresponding alumni section, 
+	//then the corresponding student section
+	String[] reasons;
+	public ValueAndReason(double value, String[] reasons) {
 		this.value = value;
-		this.reason = reason;
+		this.reasons = reasons;
 	}
 
 	static class ValueAndReasonComparator implements Comparator<ValueAndReason> {
