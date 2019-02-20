@@ -123,6 +123,14 @@ public class SolveLinearProgram {
 	}
 
 	public static void runLP(String[] args) throws InterruptedException, IOException {
+		/*
+		debug manually in command line with following commented out commands
+		System.out.println("waiting");
+		Scanner waitScanner = new Scanner(System.in);
+		waitScanner.next();
+		waitScanner.close();
+		*/
+		
 		//TODO: remove sensitivity analysis
 		//sends string to console to start GLP solver
 		final Process process = Runtime.getRuntime().exec("glpsol --lp src/PenAndPaper.lp --ranges PenAndPaperSensitivity.txt -o PenAndPaperResults.txt");

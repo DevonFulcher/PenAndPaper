@@ -12,10 +12,11 @@ public class Alumni {
     ArrayList<String> statedPriority = new ArrayList<String>();
     public int numLetters;
     public boolean noZip = false;
+    public String sportsGender; //can contain either "Men's", "Women's", or "No preference or N/A"
     
     public String toString() {
     	return "alumnus name: " + name + "\n" + "priority types: " 
     			+ priorityTypes + "\n" + "stated priority: " + statedPriority
-    			+ "\n" + "number of letters: " + numLetters + "\n" + "noZip: " + noZip + "\n";
+    			+ "\n" + "number of letters: " + numLetters + "\n" + "noZip: " + noZip + "\n" + "sportsGender: " + sportsGender + "\n\n";
     }
 }

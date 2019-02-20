@@ -70,7 +70,7 @@ public class ProcessData {
 						}
 					} else {
 						for(int k = 0; k < numPriorities; k++) {
-							if(thisAlumnus.priorityTypes.get(k).equals("Geographic Proximity")) {
+							if(thisAlumnus.priorityTypes.get(k).equals("Geographic Proximity") && !thisAlumnus.statedPriority.get(k).equals("error")) {
 								alumniLatitude = zipMap.get(thisAlumnus.statedPriority.get(k)).element1;
 								alumniLongitude = zipMap.get(thisAlumnus.statedPriority.get(k)).element2;
 								distanceMatrix[i][j][k] = new DistanceWithNormalization(distance(studentLatitude, studentLongitude, alumniLatitude, alumniLongitude),-1);
@@ -148,22 +148,26 @@ public class ProcessData {
 						if(terms[k] > 0) {
 							String priorityType = thisAlumni.priorityTypes.get(k);
 							String statedPriority = thisAlumni.statedPriority.get(k);
-							if(priorityType.equals("Geographic Proximity")) {
-								reasons[0] = ((int) Math.round(distanceMatrix[i][j][k].distance)) + " distance in miles";
-								reasons[1] = statedPriority;
-								reasons[2] = thisStudent.zipCode;
-								matchReasonsMatrix[i][j][k] = new ValueAndReason(terms[k], reasons);
-							} else if (priorityType.equals("Academic Interest")){
-								reasons[0] = "Academic Interest";
-								reasons[1] = statedPriority;
-								reasons[2] = thisStudent.majorInterests.toString();
+							if (statedPriority.equals("error")) {
 								matchReasonsMatrix[i][j][k] = new ValueAndReason(terms[k], reasons);
 							} else {
-								assert priorityType.equals("Co-Curricular Activity");
-								reasons[0] = "Co-Curricular Activity";
-								reasons[1] = statedPriority;
-								reasons[2] = thisStudent.extraCurricularInterests.toString();
-								matchReasonsMatrix[i][j][k] = new ValueAndReason(terms[k], reasons);
+								if(priorityType.equals("Geographic Proximity")) {
+									reasons[0] = ((int) Math.round(distanceMatrix[i][j][k].distance)) + " distance in miles";
+									reasons[1] = statedPriority;
+									reasons[2] = thisStudent.zipCode;
+									matchReasonsMatrix[i][j][k] = new ValueAndReason(terms[k], reasons);
+								} else if (priorityType.equals("Academic Interest")){
+									reasons[0] = "Academic Interest";
+									reasons[1] = statedPriority;
+									reasons[2] = thisStudent.majorInterests.toString();
+									matchReasonsMatrix[i][j][k] = new ValueAndReason(terms[k], reasons);
+								} else {
+									assert priorityType.equals("Co-Curricular Activity");
+									reasons[0] = "Co-Curricular Activity";
+									reasons[1] = statedPriority;
+									reasons[2] = thisStudent.extraCurricularInterests.toString();
+									matchReasonsMatrix[i][j][k] = new ValueAndReason(terms[k], reasons);
+								}
 							}
 						} else {
 							matchReasonsMatrix[i][j][k] = new ValueAndReason(terms[k], reasons);
@@ -177,7 +181,7 @@ public class ProcessData {
 					String[] notApplicableStringArray = {"not applicable", "not applicable", "not applicable"};
 					//reasons will be filled with actual reasons of match
 					String[] reasons = new String[3];
-					
+
 					//add constant to increase importance of first generation
 					terms[k] = (thisStudent.firstGeneration)? firstGenerationImportance: 0;
 					reasons[0] = "first generation";
@@ -244,14 +248,35 @@ public class ProcessData {
 				return new Triple<Double, Double, Match>(0.0, 0.0, match);
 			}
 		}
-		if (thisPriority.equals("Co-Curricular Activity") || thisPriority.equals("Co-Curricular Interest")) {
+		if (thisPriority.equals("Co-Curricular Activity") || thisPriority.equals("Co-Curricular Interest") || thisPriority.equals("Co-curricular Interest")) {
 			for(int i=0;i<student.extraCurricularInterests.size();i++) {
 				//checks if student extracurricular contains alumni input for co curricular
 				//"Swimming - Men" will match with alumni input of "Swimming"
 				//"Musicc" will match with alumni input of "Music"
-				if (student.extraCurricularInterests.get(i).contains(alumni.statedPriority.get(priorityIndex))) {
-					match.coCurricularMatch = true;
-					return new Triple<Double, Double, Match>(1.0, coCurricularInterestImportance, match);
+				String studentExtraCurricularInterest = student.extraCurricularInterests.get(i);
+				String alumniStatedPriority = alumni.statedPriority.get(priorityIndex);
+				if (studentExtraCurricularInterest.contains(alumniStatedPriority)) {
+					//TODO: make separate read in doc
+					String[] allSports = {"Baseball", "Basketball", "Cross Country", "Football", "Golf", "Lacrosse", "Soccer", "Softball", "Swimming", "Tennis", "Track & Field", "Volleyball"};
+					//true if alumniStatedPriority is in allSports and false otherwise
+					if (Arrays.binarySearch(allSports, alumniStatedPriority) >= 0) {
+						//the following if/else sequence ensures that alumni are only paired with students if they play the same gender of sport
+						if (alumni.sportsGender.equals("Men's") && student.gender.equals("M")) {
+							System.out.println("in here");
+							match.coCurricularMatch = true;
+							return new Triple<Double, Double, Match>(1.0, coCurricularInterestImportance, match);
+						} else if (alumni.sportsGender.equals("Women's") && student.gender.equals("F")) {
+							match.coCurricularMatch = true;
+							return new Triple<Double, Double, Match>(1.0, coCurricularInterestImportance, match);
+						} else if (alumni.sportsGender.equals("No preference or N/A")) {
+							System.out.println("in NopreferenceorN");
+							match.coCurricularMatch = true;
+							return new Triple<Double, Double, Match>(1.0, coCurricularInterestImportance, match);
+						}
+					} else {
+						match.coCurricularMatch = true;
+						return new Triple<Double, Double, Match>(1.0, coCurricularInterestImportance, match);
+					}
 				}
 			}
 			return new Triple<Double, Double, Match>(0.0, 0.0, match);
@@ -276,7 +301,7 @@ public class ProcessData {
 				Student thisStudent = studentList.get(i);
 				Alumni thisAlumni = alumniList.get(j);
 				//create variables matrix
-				variableNames[i][j] = thisAlumni.name + thisStudent.ref ;
+				variableNames[i][j] = thisAlumni.name + thisStudent.ref;
 			}
 		}
 		return variableNames;
