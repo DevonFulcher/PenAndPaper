@@ -15,11 +15,10 @@ public class Student {
 	public double averageMatch = 0;
 	public boolean noZip; //a student has noZip if their zip code is not recognized to be a US zip. TODO: ask Mrs. Bowman if in US/out of US data is available
 	public boolean noConversion; //some students do not have a specified conversion score
-	public String gender;
 	public Student(int reff,String st,String zip,ArrayListOverrideToString<String> majInterests, 
 			ArrayListOverrideToString<String> extraCurrInterests, boolean firstGeneration,
 			boolean codyRecipient, boolean moodRecipient, 
-			int conversionScore, boolean noZip, boolean noConversion, String gender) {
+			int conversionScore, boolean noZip, boolean noConversion) {
 		this.ref = reff;
 		this.state = st;
 		this.zipCode = zip;
@@ -31,7 +30,6 @@ public class Student {
 		this.conversionScore = conversionScore;
 		this.noZip = noZip;
 		this.noConversion = noConversion;
-		this.gender = gender;
 	}
 	
 	public String toString() {
