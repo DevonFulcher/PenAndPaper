@@ -12,7 +12,7 @@ import java.util.StringTokenizer;
 public class ReadInData {
 	public static ArrayList<String> readInMajors() throws IOException{
 		ArrayList<String> majorsList=new ArrayList<String>();
-		File majorsFile=new File("./confidential_data/Majors List.csv");//put file name here
+		File majorsFile=new File("./open_data/Majors List.csv");//put file name here
 		Scanner reader=new Scanner(majorsFile);
 		while(reader.hasNextLine()) {
 			String major = reader.nextLine();
@@ -25,7 +25,7 @@ public class ReadInData {
 
 	public static ArrayList<String> readInScholarships() throws IOException{
 		ArrayList<String> scholarshipsList=new ArrayList<String>();
-		File scholarshipFile=new File("./confidential_data/Scholarship List.csv");//put file name here
+		File scholarshipFile=new File("./open_data/Scholarship List.csv");//put file name here
 		Scanner reader=new Scanner(scholarshipFile);
 		while(reader.hasNextLine()) {
 			String scholarship = reader.nextLine();
@@ -38,7 +38,7 @@ public class ReadInData {
 	public static HashMap<String, Pair<Double, Double>> readInZipCodes() throws IOException{
 		HashMap<String, Pair<Double, Double>> zipMap = new HashMap<String, Pair<Double, Double>>();
 		//zip code data has been obtained from this source: https://gist.github.com/erichurst/7882666
-		File zipFile=new File("./src/US Zip Codes from 2013 Government Data.csv");//put file name here
+		File zipFile=new File("./open_data/US Zip Codes from 2013 Government Data.csv");//put file name here
 		Scanner reader=new Scanner(zipFile);
 		reader.nextLine(); //skip row with header
 		StringTokenizer tokenizer;
@@ -58,7 +58,7 @@ public class ReadInData {
 	public static Pair<Integer, ArrayList<Alumni>> readInAlumni(HashMap<String, Pair<Double, Double>> zipMap, int numPriorities) throws IOException{
 		ArrayList<Alumni> alumniList = new ArrayList<Alumni>();
 		int totalNumLetters = 0;
-		File alumniFile=new File("./confidential_data/updated Alumni Data.csv");//put file path here
+		File alumniFile=new File("./confidential_data/Alumni Data.csv");//put file path here
 		Scanner reader=new Scanner(alumniFile);
 		reader.nextLine(); //skip row with header
 		StringTokenizer tokenizer;
@@ -132,7 +132,7 @@ public class ReadInData {
 	public static ArrayList<Student> readInStudents(HashMap<String, Pair<Double, Double>> zipMap, 
 			ArrayList<String> possibleScholarships, ArrayList<String>majorsList) throws IOException{
 		ArrayList<Student> studentList=new ArrayList<Student>();
-		File studentFile=new File("./confidential_data/updated Student Data.csv");//file name
+		File studentFile=new File("./confidential_data/Student Data.csv");//file name
 		Scanner reader=new Scanner(studentFile);
 		reader.nextLine();//Skip the row with headers
 		while(reader.hasNextLine()) {

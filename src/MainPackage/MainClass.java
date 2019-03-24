@@ -14,7 +14,7 @@ public class MainClass {
 	public static final int NUM_REASONS_TO_PRINT = NUM_PRIORITIES + NUM_ADMISSIONS_CRITERIA;
 
 	//Make sure to turn this off to allow for user input
-	static final boolean DEBUG_MODE = true;
+	static final boolean DEBUG_MODE = false;
 
 	public static void main(String args[]) throws IOException, InterruptedException {
 		long startTime = System.currentTimeMillis();
@@ -125,7 +125,10 @@ public class MainClass {
 				numLettersForEachMatch, studentList.size(), numLettersForEachPriority);
 		ProcessResults.createStudentsLackingLetter(studentList);
 		ProcessResults.outputMatchScores(alumniList, studentList, matchScores);
+		
 		System.out.println("Done. Results are now in the results folder.");
+		System.out.println("Press x then enter to exit");
+		scan.next();
 		scan.close();
 		long endTime = System.currentTimeMillis();
 		if (DEBUG_MODE)
