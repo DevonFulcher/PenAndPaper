@@ -1,13 +1,13 @@
 /.metadata/
 PenAndPaperResults.*
 PenAndPaper.*
-#Alumni Data.*
+Alumni Data.*
 majorsList.*
-#Student Data.*
-#Category Analysis.*
-#Final Output.*
+Student Data.*
+Category Analysis.*
+Final Output.*
 Match Scores.*
-#Students Lacking Letters.*
+Students Lacking Letters.*
 *.class
 *.lp
 *.txt
