@@ -17,6 +17,7 @@ public class MainClass {
 	static final boolean DEBUG_MODE = true;
 
 	public static void main(String args[]) throws IOException, InterruptedException {
+		long startTime = System.currentTimeMillis();
 		Scanner scan = new Scanner(System.in);
 		System.out.println("email DevonFulcher3@gmail.com if you experience any problems.\n");
 
@@ -26,19 +27,19 @@ public class MainClass {
 		double firstPriorityImportance, secondPriorityImportance, thirdPriorityImportance;
 		if (DEBUG_MODE) {
 			//student attribute importance
-			firstGenerationImportance = 8;
-			outOfStateImportance = 7;
-			codyScholarshipImportance = 4;
-			moodScholarshipImportance = 2;
-			lowConversionScoreImportance = 9;
+			firstGenerationImportance = 0;
+			outOfStateImportance = 0;
+			codyScholarshipImportance = 0;
+			moodScholarshipImportance = 0;
+			lowConversionScoreImportance = 0;
 			
 			//match categories importance
-			academicInterestImportance = 4;
-			coCurricularActivityImportance = 9;
+			academicInterestImportance = 10000;
+			coCurricularActivityImportance = 0;
 			
 			//priority importance
-			firstPriorityImportance = 7;
-			secondPriorityImportance = 4;
+			firstPriorityImportance = 3;
+			secondPriorityImportance = 2;
 			thirdPriorityImportance = 1;
 		} else {
 			//read in student attribute importance from user
@@ -82,12 +83,10 @@ public class MainClass {
 			System.out.print("third priority importance: ");
 			thirdPriorityImportance = Double.parseDouble(scan.next());
 		}
-
-		scan.close();
+		
 		System.out.println("\nPlease wait about 30 seconds. If the results are not satisfactory, try running \n"
 				+ "the program again but with different values for the importance of different variables. \n"
 				+ "Make sure that you close the Excel files that this program creates before running again. \n");
-
 
 		//read in data
 		ArrayList<String> majorsList = ReadInData.readInMajors();
@@ -113,7 +112,7 @@ public class MainClass {
 		String[][] variableNames = ProcessData.createVariables(alumniList, studentList);
 
 		//create and run linear program
-		SolveLinearProgram.createLPFile(matchScores, variableNames, alumniList, studentList);
+		SolveLinearProgram.createLPFile(matchScores, variableNames, alumniList, studentList);		
 		SolveLinearProgram.runLP(args);
 
 		//process results
@@ -127,5 +126,9 @@ public class MainClass {
 		ProcessResults.createStudentsLackingLetter(studentList);
 		ProcessResults.outputMatchScores(alumniList, studentList, matchScores);
 		System.out.println("Done. Results are now in the results folder.");
+		long endTime = System.currentTimeMillis();
+		scan.close();
+		if (DEBUG_MODE)
+			System.out.println("That took " + (endTime - startTime) / 1000 + " seconds");
 	}	
 }

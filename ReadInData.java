@@ -22,7 +22,7 @@ public class ReadInData {
 		reader.close();
 		return majorsList;
 	}
-	
+
 	public static ArrayList<String> readInScholarships() throws IOException{
 		ArrayList<String> scholarshipsList=new ArrayList<String>();
 		File scholarshipFile=new File("./confidential_data/Scholarship List.csv");//put file name here
@@ -58,7 +58,7 @@ public class ReadInData {
 	public static Pair<Integer, ArrayList<Alumni>> readInAlumni(HashMap<String, Pair<Double, Double>> zipMap, int numPriorities) throws IOException{
 		ArrayList<Alumni> alumniList = new ArrayList<Alumni>();
 		int totalNumLetters = 0;
-		File alumniFile=new File("./confidential_data/Alumni Data.csv");//put file path here
+		File alumniFile=new File("./confidential_data/updated Alumni Data.csv");//put file path here
 		Scanner reader=new Scanner(alumniFile);
 		reader.nextLine(); //skip row with header
 		StringTokenizer tokenizer;
@@ -71,27 +71,52 @@ public class ReadInData {
 			} catch (NoSuchElementException e) {
 				break;
 			}
+			tokenizer.nextToken(); //skip over email address
 			String firstName = tokenizer.nextToken();			
 			String lastName = tokenizer.nextToken();
 			String name = firstName+lastName;
 			while(name.contains(" ")) name=name.replace(" ","");
+			//remove all hyphens in names
+			while(name.contains("-")) name=name.replace("-", "");
 			alumni.name = name;
 			alumni.numLetters = Integer.parseInt(tokenizer.nextToken().trim());
 			totalNumLetters += alumni.numLetters;
+			tokenizer.nextToken(); //skip over graduation year
 
+			String[] possiblePriorityTypes = {"Academic Interest", "Geographic Proximity", "Co-curricular Interest"};
+			String priorityReadInError = "";
 			for (int i = 0; i < numPriorities; i++) {
+				if (alumni.name.equals("JayMarshall")) {
+					System.out.println("here" + i + "\n"+ alumni);
+				}
 				String thisPriorityType = tokenizer.nextToken();
+				if (!Arrays.asList(possiblePriorityTypes).contains(thisPriorityType)) {
+					throw new IllegalArgumentException("\nincorrect priority type\n" + alumni + thisPriorityType);
+				}
 				alumni.priorityTypes.add(i, thisPriorityType);
-				String thisStatedPriority = tokenizer.nextToken();
-				thisStatedPriority = editStatedPriority(thisStatedPriority);
-				alumni.statedPriority.add(i, thisStatedPriority);
-				if (thisPriorityType.equals("Geographic Proximity") && !zipMap.containsKey(thisStatedPriority)) {
+				String statedPriority = tokenizer.nextToken();
+				if (alumni.name.equals("JayMarshall")) {
+					System.out.println("here\n"+ statedPriority);
+				}
+				String editedStatedPriority = editStatedPriority(statedPriority);
+				if (editedStatedPriority.equals("error")) {
+					if (statedPriority.equals("Men's") || statedPriority.equals("Women's") || statedPriority.equals("No preference or N/A")) {
+						priorityReadInError = statedPriority;
+					}
+				}
+				alumni.statedPriority.add(i, editedStatedPriority);
+				if (thisPriorityType.equals("Geographic Proximity") && !zipMap.containsKey(editedStatedPriority)) {
 					// if this alumnus' zip code is not in the zipMap then it is not a recognized zip code
 					alumni.noZip = true;
 				}
 			}
-
-			alumniList.add(alumni);//add alumni to list of Alumni objects
+			if (!priorityReadInError.equals("")) {
+				//read in error quick fix
+				alumni.sportsGender = priorityReadInError;
+			} else {
+				alumni.sportsGender = tokenizer.nextToken(); //can contain either "Men's", "Women's", or "No preference or N/A"
+			}
+			alumniList.add(alumni); //add alumni to list of Alumni objects
 		}
 		reader.close();
 		return new Pair<Integer, ArrayList<Alumni>>(totalNumLetters, alumniList);
@@ -99,12 +124,19 @@ public class ReadInData {
 
 	//edit stated priority to conform with data standards
 	private static String editStatedPriority(String statedPriority) {
+		if (statedPriority.equals("Men's") || statedPriority.equals("Women's") || statedPriority.equals("No preference or N/A")
+				|| statedPriority.equals("Geographic Proximity") || statedPriority.equals("Academic Interest") || statedPriority.equals("Co-curricular Interest")) {
+			statedPriority = "error";
+		}
 		while(statedPriority.contains(" "))statedPriority=statedPriority.replace(" ","");
 		if(statedPriority.contains("(Pre-Engineering)")) statedPriority = statedPriority.replace("(Pre-Engineering)","");
 		if(statedPriority.contains("(Studio)")) statedPriority = statedPriority.replace("(Studio)","");
+		if(statedPriority.equals("None")) statedPriority = statedPriority.replace("None", "");
+
+		statedPriority = statedPriority.toLowerCase();
 		return statedPriority;
 	}
-	
+
 	public static ArrayList<Student> readInStudents(HashMap<String, Pair<Double, Double>> zipMap, 
 			ArrayList<String> possibleScholarships, ArrayList<String>majorsList) throws IOException{
 		ArrayList<Student> studentList=new ArrayList<Student>();
@@ -114,9 +146,12 @@ public class ReadInData {
 		while(reader.hasNextLine()) {
 			String currentLine=reader.nextLine();
 			StringTokenizer tokenizer=new StringTokenizer(currentLine,",");//separates tokens by comma
-			
+
 			//read in student id
 			int ref = Integer.parseInt(tokenizer.nextToken().trim());
+
+			//read in gender
+			String gender = tokenizer.nextToken();
 
 			//read in first gen status and state
 			boolean firstGen = false;
@@ -145,13 +180,13 @@ public class ReadInData {
 				}
 				nextToken = tokenizer.nextToken();
 			}
-			
+
 			//read in conversion score
 			boolean noConversion = false;
 			int conversion = -1;
 			String[] possibleConversionScores = {"1","2","3","4","5","6"};
 			//true if nextToken is within possibleConversionsScores and false otherwise
-			if (Arrays.binarySearch(possibleConversionScores, nextToken) >= 0) {
+			if (Arrays.asList(possibleConversionScores).contains(nextToken)) {
 				conversion = Integer.parseInt(nextToken.trim());
 				nextToken = tokenizer.nextToken();
 			} else {
@@ -169,7 +204,7 @@ public class ReadInData {
 			} else {
 				noZip = true;
 			}
-			
+
 			//read in major interests and extracurriculars
 			ArrayListOverrideToString<String> majorInterests=new ArrayListOverrideToString<String>();
 			ArrayListOverrideToString<String> extraInterests=new ArrayListOverrideToString<String>();
@@ -179,18 +214,17 @@ public class ReadInData {
 				while(token.contains(" ")) token=token.replace(" ","");
 				if(majorsList.contains(token)) {
 					majorInterests.add(token);
-				}
-				else {
+				} else { //this token is a extra curricular interest
 					extraInterests.add(token);
 				}
 			}
-			
+
 			//TODO: JUnit test to ensure student is created correctly
 			if (noConversion) {
 				assert conversion == -1;
 			}
 			Student student = new Student
-					(ref,state,zip,majorInterests,extraInterests,firstGen,cody,mood,conversion,noZip,noConversion);
+					(ref,state,zip,majorInterests,extraInterests,firstGen,cody,mood,conversion,noZip,noConversion,gender);
 			studentList.add(student);
 		}
 		reader.close();

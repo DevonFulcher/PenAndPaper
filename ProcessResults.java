@@ -32,93 +32,90 @@ public class ProcessResults {
 		// File results=new File("./src/PenAndPaperResults.txt");
 		Scanner scan = new Scanner(results);
 		String thisString;
-		//while (scan.hasNext()) {
-		//thisString = scan.next();
-		//if (matchMap.containsKey(thisString)) {
-		//System.out.println(thisString);
-		for (int i = 0; i < studentList.size(); i++) {
-			Student thisStudent = studentList.get(i);
-			for (int j = 0; j < alumniList.size(); j++) {
-				Alumni thisAlumni = alumniList.get(j);
-				while (scan.hasNext()) {
-					thisString = scan.next();
-					if (thisString.equals(thisAlumni.name + thisStudent.ref)) {
-						scan.next(); // skip over asterisk in file
-						if (scan.nextInt() == 1) {
-							thisStudent.receivesLetter = true;
+		while (scan.hasNext()) {
+			thisString = scan.next();
+			if (matchMap.containsKey(thisString)) {
+				scan.next(); // skip over asterisk in file
+				if (scan.nextInt() == 1) {
+					for (int i = 0; i < studentList.size(); i++) {
+						Student thisStudent = studentList.get(i);
+						for (int j = 0; j < alumniList.size(); j++) {
+							Alumni thisAlumni = alumniList.get(j);
+							if (thisString.equals(thisAlumni.name + thisStudent.ref)) {
 
-							// increment the count of the letters that are sent to first generation students
-							if (thisStudent.firstGeneration) {
-								numLettersForEachGroup[0]++;
-							}
-							// increment the count of the letters that are sent to cody recipients
-							if (thisStudent.codyRecipient) {
-								numLettersForEachGroup[1]++;
-							}
-							// increment the count of the letters that are sent to mood recipients
-							if (thisStudent.moodRecipient) {
-								numLettersForEachGroup[2]++;
-							}
-							// increment the count of the letters that are sent to out of state students
-							if (!thisStudent.state.equals("TX")) {
-								numLettersForEachGroup[3]++;
-							}
-							// increment the count of the letters that are sent to a particular conversion
-							// score
-							if (!thisStudent.noConversion) {
-								switch (thisStudent.conversionScore) {
-								case 1:
-									numLettersForEachGroup[4]++;
-									break;
-								case 2:
-									numLettersForEachGroup[5]++;
-									break;
-								case 3:
-									numLettersForEachGroup[6]++;
-									break;
-								case 4:
-									numLettersForEachGroup[7]++;
-									break;
-								case 5:
-									numLettersForEachGroup[8]++;
-									break;
-								case 6:
-									numLettersForEachGroup[9]++;
+								thisStudent.receivesLetter = true;
+
+								// increment the count of the letters that are sent to first generation students
+								if (thisStudent.firstGeneration) {
+									numLettersForEachGroup[0]++;
 								}
-							}
-
-							Match thisMatch = matchMap.get(thisAlumni.name + thisStudent.ref);
-							if (thisMatch.academicInterestMatch) {
-								numLettersForEachMatch[0]++;
-							}
-							if (thisMatch.coCurricularMatch) {
-								numLettersForEachMatch[1]++;
-							}
-
-							/*
-							 * TODO: add distance between alumni and student if (thisMatch.geographicMatch)
-							 * { numLettersForEachMatch[2]++; }
-							 */
-
-							for (int k = 0; k < numPriorities; k++) {
-								if (thisMatch.priorities[k]) {
-									numLettersForEachPriority[k]++;
+								// increment the count of the letters that are sent to cody recipients
+								if (thisStudent.codyRecipient) {
+									numLettersForEachGroup[1]++;
 								}
-							}
-
-							output.print(thisStudent.ref + "," + thisAlumni.name + "," + matchScores[i][j]);
-
-							// fill in reasons matrix
-							for (int k = 0; k < numReasonsToPrint; k++) {
-								for (int m = 0; m < matchReasons[i][j][k].reasons.length; m++) {
-									output.print("," + matchReasons[i][j][k].reasons[m]);
+								// increment the count of the letters that are sent to mood recipients
+								if (thisStudent.moodRecipient) {
+									numLettersForEachGroup[2]++;
 								}
+								// increment the count of the letters that are sent to out of state students
+								if (!thisStudent.state.equals("TX")) {
+									numLettersForEachGroup[3]++;
+								}
+								// increment the count of the letters that are sent to a particular conversion
+								// score
+								if (!thisStudent.noConversion) {
+									switch (thisStudent.conversionScore) {
+									case 1:
+										numLettersForEachGroup[4]++;
+										break;
+									case 2:
+										numLettersForEachGroup[5]++;
+										break;
+									case 3:
+										numLettersForEachGroup[6]++;
+										break;
+									case 4:
+										numLettersForEachGroup[7]++;
+										break;
+									case 5:
+										numLettersForEachGroup[8]++;
+										break;
+									case 6:
+										numLettersForEachGroup[9]++;
+									}
+								}
+
+								Match thisMatch = matchMap.get(thisAlumni.name + thisStudent.ref);
+								if (thisMatch.academicInterestMatch) {
+									numLettersForEachMatch[0]++;
+								}
+								if (thisMatch.coCurricularMatch) {
+									numLettersForEachMatch[1]++;
+								}
+
+								/*
+								 * TODO: add distance between alumni and student if (thisMatch.geographicMatch)
+								 * { numLettersForEachMatch[2]++; }
+								 */
+
+								for (int k = 0; k < numPriorities; k++) {
+									if (thisMatch.priorities[k]) {
+										numLettersForEachPriority[k]++;
+									}
+								}
+
+								output.print(thisStudent.ref + "," + thisAlumni.name + "," + matchScores[i][j]);
+
+								// fill in reasons matrix
+								for (int k = 0; k < numReasonsToPrint; k++) {
+									for (int m = 0; m < matchReasons[i][j][k].reasons.length; m++) {
+										output.print("," + matchReasons[i][j][k].reasons[m]);
+									}
+								}
+								output.println();
 							}
-							output.println();
 						}
-						break;
 					}
-					//} //this curly brace
 				}
 			}
 		}
