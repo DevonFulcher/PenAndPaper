@@ -86,19 +86,13 @@ public class ReadInData {
 			String[] possiblePriorityTypes = {"Academic Interest", "Geographic Proximity", "Co-curricular Interest"};
 			String priorityReadInError = "";
 			for (int i = 0; i < numPriorities; i++) {
-				if (alumni.name.equals("JayMarshall")) {
-					System.out.println("here" + i + "\n"+ alumni);
-				}
 				String thisPriorityType = tokenizer.nextToken();
 				if (!Arrays.asList(possiblePriorityTypes).contains(thisPriorityType)) {
 					throw new IllegalArgumentException("\nincorrect priority type\n" + alumni + thisPriorityType);
 				}
 				alumni.priorityTypes.add(i, thisPriorityType);
 				String statedPriority = tokenizer.nextToken();
-				if (alumni.name.equals("JayMarshall")) {
-					System.out.println("here\n"+ statedPriority);
-				}
-				String editedStatedPriority = editStatedPriority(statedPriority);
+				String editedStatedPriority = editInput(statedPriority);
 				if (editedStatedPriority.equals("error")) {
 					if (statedPriority.equals("Men's") || statedPriority.equals("Women's") || statedPriority.equals("No preference or N/A")) {
 						priorityReadInError = statedPriority;
@@ -123,7 +117,7 @@ public class ReadInData {
 	}
 
 	//edit stated priority to conform with data standards
-	private static String editStatedPriority(String statedPriority) {
+	private static String editInput(String statedPriority) {
 		if (statedPriority.equals("Men's") || statedPriority.equals("Women's") || statedPriority.equals("No preference or N/A")
 				|| statedPriority.equals("Geographic Proximity") || statedPriority.equals("Academic Interest") || statedPriority.equals("Co-curricular Interest")) {
 			statedPriority = "error";
@@ -132,7 +126,6 @@ public class ReadInData {
 		if(statedPriority.contains("(Pre-Engineering)")) statedPriority = statedPriority.replace("(Pre-Engineering)","");
 		if(statedPriority.contains("(Studio)")) statedPriority = statedPriority.replace("(Studio)","");
 		if(statedPriority.equals("None")) statedPriority = statedPriority.replace("None", "");
-
 		statedPriority = statedPriority.toLowerCase();
 		return statedPriority;
 	}
@@ -213,8 +206,10 @@ public class ReadInData {
 				while(token.contains("\"")) token=token.replace("\"","");//remove excess spaces and quotation marks
 				while(token.contains(" ")) token=token.replace(" ","");
 				if(majorsList.contains(token)) {
+					token = editInput(token);
 					majorInterests.add(token);
 				} else { //this token is a extra curricular interest
+					token = editInput(token);
 					extraInterests.add(token);
 				}
 			}

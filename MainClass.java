@@ -19,7 +19,6 @@ public class MainClass {
 	public static void main(String args[]) throws IOException, InterruptedException {
 		long startTime = System.currentTimeMillis();
 		Scanner scan = new Scanner(System.in);
-		System.out.println("email DevonFulcher3@gmail.com if you experience any problems.\n");
 
 		//user-defined constant scalars
 		double firstGenerationImportance, outOfStateImportance, codyScholarshipImportance, moodScholarshipImportance;
@@ -27,21 +26,22 @@ public class MainClass {
 		double firstPriorityImportance, secondPriorityImportance, thirdPriorityImportance;
 		if (DEBUG_MODE) {
 			//student attribute importance
-			firstGenerationImportance = 0;
-			outOfStateImportance = 0;
-			codyScholarshipImportance = 0;
-			moodScholarshipImportance = 0;
-			lowConversionScoreImportance = 0;
+			firstGenerationImportance = 5;
+			outOfStateImportance = 7;
+			codyScholarshipImportance = 3;
+			moodScholarshipImportance = 2;
+			lowConversionScoreImportance = 4;
 			
 			//match categories importance
-			academicInterestImportance = 10000;
-			coCurricularActivityImportance = 0;
+			academicInterestImportance = 6;
+			coCurricularActivityImportance = 11;
 			
 			//priority importance
 			firstPriorityImportance = 3;
 			secondPriorityImportance = 2;
 			thirdPriorityImportance = 1;
 		} else {
+			System.out.println("email DevonFulcher3@gmail.com if you experience any problems.\n");
 			//read in student attribute importance from user
 			System.out.println("You will be prompted to input the relative importance \n"
 					+ "of each of the student attributes. These are first-generation, out-of-state, \n"
@@ -82,11 +82,11 @@ public class MainClass {
 			secondPriorityImportance = Double.parseDouble(scan.next());
 			System.out.print("third priority importance: ");
 			thirdPriorityImportance = Double.parseDouble(scan.next());
+			System.out.println("\nPlease wait about 30 seconds. If the results are not satisfactory, try running \n"
+					+ "the program again but with different values for the importance of different variables. \n"
+					+ "Make sure that you close the Excel files that this program creates before running again. \n");
 		}
 		
-		System.out.println("\nPlease wait about 30 seconds. If the results are not satisfactory, try running \n"
-				+ "the program again but with different values for the importance of different variables. \n"
-				+ "Make sure that you close the Excel files that this program creates before running again. \n");
 
 		//read in data
 		ArrayList<String> majorsList = ReadInData.readInMajors();
@@ -126,8 +126,8 @@ public class MainClass {
 		ProcessResults.createStudentsLackingLetter(studentList);
 		ProcessResults.outputMatchScores(alumniList, studentList, matchScores);
 		System.out.println("Done. Results are now in the results folder.");
-		long endTime = System.currentTimeMillis();
 		scan.close();
+		long endTime = System.currentTimeMillis();
 		if (DEBUG_MODE)
 			System.out.println("That took " + (endTime - startTime) / 1000 + " seconds");
 	}	

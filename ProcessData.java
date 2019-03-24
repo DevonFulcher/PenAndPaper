@@ -178,7 +178,7 @@ public class ProcessData {
 					matchMap.put(thisAlumni.name + thisStudent.ref, thisMatch);
 
 					//empty string array is printed if value of a term is 0
-					String[] notApplicableStringArray = {"not applicable", "not applicable", "not applicable"};
+					String[] notApplicableStringArray = {"N/A", "N/A", "N/A"};
 					//reasons will be filled with actual reasons of match
 					String[] reasons = new String[3];
 
