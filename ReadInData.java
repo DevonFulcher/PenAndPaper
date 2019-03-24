@@ -38,7 +38,7 @@ public class ReadInData {
 	public static HashMap<String, Pair<Double, Double>> readInZipCodes() throws IOException{
 		HashMap<String, Pair<Double, Double>> zipMap = new HashMap<String, Pair<Double, Double>>();
 		//zip code data has been obtained from this source: https://gist.github.com/erichurst/7882666
-		File zipFile=new File("./src/US Zip Codes from 2013 Government Data.txt");//put file name here
+		File zipFile=new File("./src/US Zip Codes from 2013 Government Data.csv");//put file name here
 		Scanner reader=new Scanner(zipFile);
 		reader.nextLine(); //skip row with header
 		StringTokenizer tokenizer;
@@ -65,7 +65,6 @@ public class ReadInData {
 		while (reader.hasNextLine()) {
 			tokenizer = new StringTokenizer(reader.nextLine(),","); //separates tokens by comma
 			Alumni alumni=new Alumni();
-			// TODO: fix this try/catch later
 			try {
 				tokenizer.nextToken(); //get rid of timestamp
 			} catch (NoSuchElementException e) {
@@ -214,7 +213,6 @@ public class ReadInData {
 				}
 			}
 
-			//TODO: JUnit test to ensure student is created correctly
 			if (noConversion) {
 				assert conversion == -1;
 			}

@@ -140,7 +140,7 @@ public class ProcessData {
 						double thisMatchValue = returnTuple.element1;
 						double thisTermAddition = returnTuple.element2; //this is added to this term to incentivize various priority types 
 						thisMatch = returnTuple.element3;
-						thisMatch.priorities[k] = thisMatchValue > 0; //TODO: consider distance of 0
+						thisMatch.priorities[k] = thisMatchValue > 0;
 						terms[k] = priorityOneConstant * thisMatchValue + thisTermAddition;
 						//reasons contain first the match category, then the corresponding alumni section, 
 						//then the corresponding student section
@@ -285,7 +285,6 @@ public class ProcessData {
 			if (student.noZip || alumni.noZip) { //student does not have a recognized US zip code
 				return new Triple<Double, Double, Match>(0.0, 0.0, match);
 			} else {
-				//TODO: possibly change 2nd parameter of this triple
 				return new Triple<Double, Double, Match>(thisDistance, 0.0, match);
 			}
 		}

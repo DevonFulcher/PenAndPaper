@@ -13,7 +13,7 @@ public class Student {
 	public int conversionScore; //ranges from 1 to 6 with students with a score of 1 and 2 being priority
 	public boolean receivesLetter = false; //no student receives a letter upon construction
 	public double averageMatch = 0;
-	public boolean noZip; //a student has noZip if their zip code is not recognized to be a US zip. TODO: ask Mrs. Bowman if in US/out of US data is available
+	public boolean noZip; //a student has noZip if their zip code is not recognized to be a US zip.
 	public boolean noConversion; //some students do not have a specified conversion score
 	public String gender;
 	public Student(int reff,String st,String zip,ArrayListOverrideToString<String> majInterests, 
