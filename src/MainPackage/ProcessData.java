@@ -241,7 +241,8 @@ public class ProcessData {
 		String thisPriority = alumni.priorityTypes.get(priorityIndex);
 		//for each list below, the index that the value is at corresponds to the number priority it belongs to.
 		if (thisPriority.equals("Academic Interest")) {
-			if (student.majorInterests.contains(alumni.statedPriority.get(priorityIndex))) {
+			String alumniStatedPriority = alumni.statedPriority.get(priorityIndex);
+			if (student.majorInterests.contains(alumniStatedPriority) && !alumniStatedPriority.equals("")) {
 				match.academicInterestMatch = true;
 				return new Triple<Double, Double, Match>(1.0, academicInterestImportance, match);
 			} else {
@@ -255,7 +256,7 @@ public class ProcessData {
 				//"Musicc" will match with alumni input of "Music"
 				String studentExtraCurricularInterest = student.extraCurricularInterests.get(i);
 				String alumniStatedPriority = alumni.statedPriority.get(priorityIndex);
-				if (studentExtraCurricularInterest.contains(alumniStatedPriority)) {
+				if (studentExtraCurricularInterest.contains(alumniStatedPriority) && !alumniStatedPriority.equals("")) {
 					//TODO: make separate read in doc
 					String[] allSports = {"Baseball", "Basketball", "Cross Country", "Football", "Golf", "Lacrosse", "Soccer", "Softball", "Swimming", "Tennis", "Track & Field", "Volleyball"};
 					//true if alumniStatedPriority is in allSports and false otherwise
