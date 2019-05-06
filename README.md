@@ -1,5 +1,8 @@
 # Pen and Paper
-Pen and Paper uses the transportation algorithm to assign alumni to prospective students based on their compatibility and attributes of the student. These alumni encourage their assigned prospective students to attend university with written letters. Learn more [here](https://drive.google.com/file/d/1EoF5_zd4GI40i5o1kP3NXk4aGLSXSei2/view?usp=sharing).
+Pen and Paper uses the transportation algorithm to assign alumni to prospective students based on their compatibility and attributes of the student. These alumni encourage their assigned prospective students to attend university with written letters. Read a report about how and why we completed this project [here](https://drive.google.com/file/d/1EoF5_zd4GI40i5o1kP3NXk4aGLSXSei2/view?usp=sharing). The main functional changes that were added since this report was written are: 
+* The geographic proximity characteristic is determined by the distance between zip codes and not just the first two digits of the zip codes.
+* The use of .csv files intead of .txt files.
+* Better user-friendly design of the input and output data.
 
 ## To Run
 1. Download and unzip this Github repository.
@@ -29,11 +32,11 @@ To change a .xlsx file to a .csv file, open Excel, go to File, Save As, then sav
 
 ![alt text](https://github.com/DevonFulcher/PenAndPaper/blob/master/resources/xlsx_to_csv.png "xlsx_to_csv")
 
-7. Double-click Start.bat and follow instruction prompts.
+7. With a Windows operating system, double-click Start.bat and follow the instruction prompts. Other operating systems will require the user to manually execute OperationPenAndPaper.jar in the command line.
 8. Retrieve results in the [results](https://github.com/DevonFulcher/PenAndPaper/tree/master/results) folder.
 
 ## Interpreting Results
-This program creates 4 output files to interpret.
+This program creates four output files to interpret.
 * Category Analysis.csv: Provides statistics on the matchings that this program made.
 * Final Output.csv: Provides the matchings between students and alumni. Each matching is listed with the reason that matching was made and, if applicable, the student and alumni information that attributed to that matching.
 * Match Scores.csv: A matrix showing all match scores between each alumnus and student. A match score is the value of an assignment of an alumnus to student.
