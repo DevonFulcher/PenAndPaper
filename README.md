@@ -32,5 +32,12 @@ To change a .xlsx file to a .csv file, open Excel, go to File, Save As, then sav
 7. Double-click Start.bat and follow instruction prompts.
 8. Retrieve results in the [results](https://github.com/DevonFulcher/PenAndPaper/tree/master/results) folder.
 
+## Interpreting Results
+This program creates 4 output files to interpret.
+* Category Analysis.csv: Provides statistics on the matchings that this program made.
+* Final Output.csv: Provides the matchings between students and alumni. Each matching is listed with the reason that matching was made and, if applicable, the student and alumni information that attributed to that matching.
+* Match Scores.csv: A matrix showing all match scores between each alumnus and student. A match score is the value of an assignment of an alumnus to student.
+* Students Lacking Letters.csv: A list of all students who did not receive letters, sorted by their average match score.
+
 ## Acknowledgements
 Pen and Paper was developed for the Fall 2018 Operations Research course and Spring 2019 Operations Research in Practive independent study at Southwestern Univeristy. [Dr. Barbara Anthony's](https://www.southwestern.edu/live/profiles/25773-barbara-m-anthony) advised this project. This project was completed with help from [Daniel Maldonaldo](https://www.linkedin.com/in/daniel-maldonado-468292128/), [Katie Dyo](https://www.linkedin.com/in/katiedyo/), [Alexander Hoffman](https://www.linkedin.com/in/alexander-hoffman-bb3aa2134/), and [Greg O'brien](https://www.linkedin.com/in/gregoryobrien1613/).
