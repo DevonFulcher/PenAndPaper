@@ -153,9 +153,9 @@ public class ProcessResults {
 			output.println();
 
 			// match statistics
-			String[] matchNames = { "Academic Interest", "Co-curricular Interest", "Geographic Proximity" };
+			String[] matchNames = { "Academic Interest", "Co-curricular Interest"};
 			output.println(",percent of letters sent that contained match from each category");
-			for (int i = 0; i < numLettersForEachMatch.length; i++) {
+			for (int i = 0; i < matchNames.length; i++) {
 				output.print(matchNames[i] + ",");
 				output.println(numLettersForEachMatch[i] * 1.0 / totalNumLetters * 100);
 			}

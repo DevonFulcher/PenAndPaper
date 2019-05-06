@@ -1,4 +1,5 @@
 package MainPackage;
+import java.util.Arrays;
 import java.util.Comparator;
 
 public class ValueAndReason {
@@ -22,6 +23,10 @@ public class ValueAndReason {
 				return 1;
 			}
 		}
+	}
+	
+	public String toString() {
+		return "value: " + value + "\nreason: " + Arrays.toString(reasons) + "\n";
 	}
 }
 

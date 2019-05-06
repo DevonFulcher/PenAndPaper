@@ -129,14 +129,14 @@ public class ProcessData {
 		ValueAndReason[][][] matchReasonsMatrix = new ValueAndReason[studentList.size()][alumniList.size()][numReasonsToPrint];
 		double[] terms = new double[numReasonsToPrint];
 		for (int i = 0; i < studentList.size(); i++) {
-			Student thisStudent = studentList.get(i);
+			Student student = studentList.get(i);
 			for (int j = 0; j < alumniList.size(); j++) {
-				Alumni thisAlumni = alumniList.get(j);				
+				Alumni alumni = alumniList.get(j);				
 				Match thisMatch = new Match(numPriorities);
 				int k = 0;
 				try {
 					while(k < numPriorities) {
-						Triple<Double, Double, Match> returnTuple = matchValue(thisStudent, thisAlumni, thisMatch, distanceMatrix[i][j][k].normalizedDistance, k, academicInterestImportance, coCurricularInterestImportance);
+						Triple<Double, Double, Match> returnTuple = matchValue(student, alumni, thisMatch, distanceMatrix[i][j][k].normalizedDistance, k, academicInterestImportance, coCurricularInterestImportance);
 						double thisMatchValue = returnTuple.element1;
 						double thisTermAddition = returnTuple.element2; //this is added to this term to incentivize various priority types 
 						thisMatch = returnTuple.element3;
@@ -144,28 +144,28 @@ public class ProcessData {
 						terms[k] = priorityOneConstant * thisMatchValue + thisTermAddition;
 						//reasons contain first the match category, then the corresponding alumni section, 
 						//then the corresponding student section
-						String[] reasons = new String[3];
+						String[] reasons = {" ", " ", " "};
 						if(terms[k] > 0) {
-							String priorityType = thisAlumni.priorityTypes.get(k);
-							String statedPriority = thisAlumni.statedPriority.get(k);
+							String priorityType = alumni.priorityTypes.get(k);
+							String statedPriority = alumni.statedPriority.get(k);
 							if (statedPriority.equals("error")) {
 								matchReasonsMatrix[i][j][k] = new ValueAndReason(terms[k], reasons);
 							} else {
 								if(priorityType.equals("Geographic Proximity")) {
 									reasons[0] = ((int) Math.round(distanceMatrix[i][j][k].distance)) + " distance in miles";
 									reasons[1] = statedPriority;
-									reasons[2] = thisStudent.zipCode;
+									reasons[2] = student.zipCode;
 									matchReasonsMatrix[i][j][k] = new ValueAndReason(terms[k], reasons);
 								} else if (priorityType.equals("Academic Interest")){
 									reasons[0] = "Academic Interest";
 									reasons[1] = statedPriority;
-									reasons[2] = thisStudent.majorInterests.toString();
+									reasons[2] = student.majorInterests.toString();
 									matchReasonsMatrix[i][j][k] = new ValueAndReason(terms[k], reasons);
 								} else {
 									assert priorityType.equals("Co-Curricular Activity");
 									reasons[0] = "Co-Curricular Activity";
 									reasons[1] = statedPriority;
-									reasons[2] = thisStudent.extraCurricularInterests.toString();
+									reasons[2] = student.extraCurricularInterests.toString();
 									matchReasonsMatrix[i][j][k] = new ValueAndReason(terms[k], reasons);
 								}
 							}
@@ -175,63 +175,72 @@ public class ProcessData {
 						k++;
 					}
 					//populate match map for later analysis
-					matchMap.put(thisAlumni.name + thisStudent.ref, thisMatch);
+					matchMap.put(alumni.name + student.ref, thisMatch);
 
 					//empty string array is printed if value of a term is 0
-					String[] notApplicableStringArray = {"N/A", "N/A", "N/A"};
-					//reasons will be filled with actual reasons of match
-					String[] reasons = new String[3];
+					String[] notApplicableStringArray = {" ", " ", " "};
 
 					//add constant to increase importance of first generation
-					terms[k] = (thisStudent.firstGeneration)? firstGenerationImportance: 0;
-					reasons[0] = "first generation";
-					matchReasonsMatrix[i][j][k++] = new ValueAndReason(terms[k], (terms[k] > 0)? reasons: notApplicableStringArray);
+					terms[k] = (student.firstGeneration)? firstGenerationImportance: 0;
+					String[] reasonsFirstGen = {"first generation", " ", " "};
+					matchReasonsMatrix[i][j][k] = new ValueAndReason(terms[k], (terms[k] > 0)? reasonsFirstGen: notApplicableStringArray);
+					k++;
 
 					//add constant to increase importance of out of state
-					terms[k] = (!thisStudent.state.equals("TX"))? outOfStateImportance: 0;
-					reasons[0] = "out of state";
-					matchReasonsMatrix[i][j][k++] = new ValueAndReason(terms[k], (terms[k] > 0)? reasons: notApplicableStringArray);
+					terms[k] = (!student.state.equals("TX"))? outOfStateImportance: 0;
+					String[] reasonsOutOfState = {"out of state", " ", " "};
+					matchReasonsMatrix[i][j][k] = new ValueAndReason(terms[k], (terms[k] > 0)? reasonsOutOfState: notApplicableStringArray);
+					k++;
 
 					//add constant to increase importance of Cody scholarship
-					terms[k] = (thisStudent.codyRecipient)? codyScholarshipImportance: 0;
-					reasons[0] = "cody scholarship";
-					matchReasonsMatrix[i][j][k++] = new ValueAndReason(terms[k], (terms[k] > 0)? reasons: notApplicableStringArray);
+					terms[k] = (student.codyRecipient)? codyScholarshipImportance: 0;
+					String[] reasonsCody = {"Cody scholarship", " ", " "};
+					matchReasonsMatrix[i][j][k] = new ValueAndReason(terms[k], (terms[k] > 0)? reasonsCody: notApplicableStringArray);
+					k++;
 
 					//add constant to increase importance of Mood scholarship
-					terms[k] = (thisStudent.moodRecipient)? moodScholarshipImportance: 0;
-					reasons[0] = "mood scholarship";
-					matchReasonsMatrix[i][j][k++] = new ValueAndReason(terms[k], (terms[k] > 0)? reasons: notApplicableStringArray);
-
+					terms[k] = (student.moodRecipient)? moodScholarshipImportance: 0;
+					String[] reasonsMood = {"Mood scholarship", " ", " "};
+					matchReasonsMatrix[i][j][k] = new ValueAndReason(terms[k], (terms[k] > 0)? reasonsMood: notApplicableStringArray);
+					k++;
+					
+					
 					//calculate adjusted conversion score
 					double adjustedConversion = 0;
-					if (thisStudent.noConversion) {
-						//set to be approximately the average of conversion scores
+					if (student.noConversion) {
+						//set to be approximately the average of adjusted conversion scores
 						adjustedConversion = 0.5;
 					} else {
 						//changes range of conversion score from [1,6] to [0,5] then scales score to be in [0,1]
 						//then subtracts score from one to increase importance of lower scores 
-						adjustedConversion = (1 - (((double) (thisStudent.conversionScore - 1)) / 5.0));
+						adjustedConversion = 1 - (((double) (student.conversionScore - 1)) / 5.0);
 					}
 					terms[k] = adjustedConversion * lowConversionScoreImportance;
-					reasons[0] = "conversion score of " + thisStudent.conversionScore;
-					matchReasonsMatrix[i][j][k] = new ValueAndReason(terms[k], (terms[k] > 0)? reasons: notApplicableStringArray);
+					String[] reasonsConversion = {"conversion score of " + student.conversionScore, " ", " "};
+					matchReasonsMatrix[i][j][k] = new ValueAndReason(terms[k], (terms[k] > 0)? reasonsConversion: notApplicableStringArray);
+					
 				} catch (ArrayIndexOutOfBoundsException e) {
 					System.out.println("be sure that the number of terms is equal to numReasonsToPrint. " + k + " should equal " + numReasonsToPrint);
 				}
+				
+				//sort reasons by value
 				Arrays.sort(matchReasonsMatrix[i][j], new ValueAndReason.ValueAndReasonComparator());
 				//reverse order of sorted array
 				int backIndex = matchReasonsMatrix[i][j].length - 1;
 				for (int l = 0; l < matchReasonsMatrix[i][j].length / 2; l++) {
 					ValueAndReason placeHolder = matchReasonsMatrix[i][j][l];
-					matchReasonsMatrix[i][j][l] = matchReasonsMatrix[i][j][backIndex - l];
-					matchReasonsMatrix[i][j][backIndex - l] = placeHolder;
+					matchReasonsMatrix[i][j][l] = matchReasonsMatrix[i][j][backIndex];
+					matchReasonsMatrix[i][j][backIndex] = placeHolder;
+					backIndex--;
 				}
+				
+				//sum terms across this match
 				for (double term: terms) {
 					matchScores[i][j] += term;
 				}
-				thisStudent.averageMatch += matchScores[i][j];
+				student.averageMatch += matchScores[i][j];
 			}
-			thisStudent.averageMatch /= alumniList.size();
+			student.averageMatch /= alumniList.size();
 		}
 		return new Triple<double[][], HashMap<String, Match>, ValueAndReason[][][]> (matchScores, matchMap, matchReasonsMatrix); 
 	}
@@ -258,21 +267,22 @@ public class ProcessData {
 				String alumniStatedPriority = alumni.statedPriority.get(priorityIndex);
 				if (studentExtraCurricularInterest.contains(alumniStatedPriority) && !alumniStatedPriority.equals("")) {
 					//TODO: make separate read in doc
-					String[] allSports = {"Baseball", "Basketball", "Cross Country", "Football", "Golf", "Lacrosse", "Soccer", "Softball", "Swimming", "Tennis", "Track & Field", "Volleyball"};
+					String[] allSports = {"baseball", "basketball", "cross country", "football", "golf", "lacrosse", "soccer", "softball", "swimming", "tennis", "track & field", "volleyball"};
 					//true if alumniStatedPriority is in allSports and false otherwise
 					if (Arrays.asList(allSports).contains(alumniStatedPriority)) {
 						//the following if/else sequence ensures that alumni are only paired with students if they play the same gender of sport
 						if (alumni.sportsGender.equals("Men's") && student.gender.equals("M")) {
-							System.out.println("in here");
 							match.coCurricularMatch = true;
 							return new Triple<Double, Double, Match>(1.0, coCurricularInterestImportance, match);
 						} else if (alumni.sportsGender.equals("Women's") && student.gender.equals("F")) {
 							match.coCurricularMatch = true;
 							return new Triple<Double, Double, Match>(1.0, coCurricularInterestImportance, match);
 						} else if (alumni.sportsGender.equals("No preference or N/A")) {
-							System.out.println("in NopreferenceorN");
 							match.coCurricularMatch = true;
 							return new Triple<Double, Double, Match>(1.0, coCurricularInterestImportance, match);
+						} else {
+							match.coCurricularMatch = false;
+							return new Triple<Double, Double, Match>(0.0, coCurricularInterestImportance, match);
 						}
 					} else {
 						match.coCurricularMatch = true;

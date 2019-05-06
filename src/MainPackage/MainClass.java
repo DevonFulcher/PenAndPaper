@@ -25,21 +25,22 @@ public class MainClass {
 		double lowConversionScoreImportance, academicInterestImportance, coCurricularActivityImportance;
 		double firstPriorityImportance, secondPriorityImportance, thirdPriorityImportance;
 		if (DEBUG_MODE) {
+			System.out.println("started in debug mode");
 			//student attribute importance
-			firstGenerationImportance = 5;
-			outOfStateImportance = 7;
-			codyScholarshipImportance = 3;
-			moodScholarshipImportance = 2;
-			lowConversionScoreImportance = 4;
+			firstGenerationImportance = 50;
+			outOfStateImportance = 50;
+			codyScholarshipImportance = 50;
+			moodScholarshipImportance = 25;
+			lowConversionScoreImportance = 50;
 			
 			//match categories importance
-			academicInterestImportance = 6;
-			coCurricularActivityImportance = 11;
+			academicInterestImportance = 50;
+			coCurricularActivityImportance = 50;
 			
 			//priority importance
-			firstPriorityImportance = 3;
-			secondPriorityImportance = 2;
-			thirdPriorityImportance = 1;
+			firstPriorityImportance = 50;
+			secondPriorityImportance = 25;
+			thirdPriorityImportance = 5;
 		} else {
 			System.out.println("email DevonFulcher3@gmail.com if you experience any problems.\n");
 			//read in student attribute importance from user
@@ -47,7 +48,7 @@ public class MainClass {
 					+ "of each of the student attributes. These are first-generation, out-of-state, \n"
 					+ "Cody sholarship, Mood scholarship, and low conversion score. \n"
 					+ "Greater numbers mean that attribute is more important to you and lesser numbers \n"
-					+ "mean that attribute is less important to you. \n");
+					+ "means that attribute is less important to you. \n");
 			System.out.print("first-generation: ");
 			firstGenerationImportance = Double.parseDouble(scan.next());
 			System.out.print("out-of-state: ");
@@ -82,7 +83,7 @@ public class MainClass {
 			secondPriorityImportance = Double.parseDouble(scan.next());
 			System.out.print("third priority importance: ");
 			thirdPriorityImportance = Double.parseDouble(scan.next());
-			System.out.println("\nPlease wait about 30 seconds. If the results are not satisfactory, try running \n"
+			System.out.println("\nPlease wait about 15 seconds. If the results are not satisfactory, try running \n"
 					+ "the program again but with different values for the importance of different variables. \n"
 					+ "Make sure that you close the Excel files that this program creates before running again. \n");
 		}
@@ -127,11 +128,11 @@ public class MainClass {
 		ProcessResults.outputMatchScores(alumniList, studentList, matchScores);
 		
 		System.out.println("Done. Results are now in the results folder.");
-		System.out.println("Press x then enter to exit");
-		scan.next();
-		scan.close();
 		long endTime = System.currentTimeMillis();
 		if (DEBUG_MODE)
 			System.out.println("That took " + (endTime - startTime) / 1000 + " seconds");
+		System.out.println("Press x then enter to exit");
+		scan.next();
+		scan.close();
 	}	
 }
