@@ -5,6 +5,7 @@ Pen and Paper uses the transportation algorithm to assign alumni to prospective 
 1. Download and unzip this Github repository.
 
 ![alt text](https://github.com/DevonFulcher/PenAndPaper/blob/master/resources/download.png "download")
+
 2. [Install](https://www.java.com/en/download/) Java.
 3. [Install](https://www.gnu.org/software/glpk/) GLPK which contains GLPSOL.
 4. Create a survey in [this](https://forms.gle/xVXEqm7ok8pMgQ9u5) style and send to alumni volunteers. Once the volunteers have submitted their answers, download their responses as a .csv file, rename that file to Alumni Data.csv, and place it in the [confidential_data](https://github.com/DevonFulcher/PenAndPaper/tree/master/confidential_data) folder.
